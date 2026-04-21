@@ -81,9 +81,36 @@ export function generateHtml(data: ScreenshotData[]): string {
       let parsed: any = null;
       try { parsed = JSON.parse(resp.body); } catch {}
       
-      let cookiesHtml = '';
+      let respCookiesHtml = '';
+      // Request headers & body
+      let reqHeadersHtml = '';
+      let reqBodyHtml = '';
+      if (parsed?.entries?.[0]?.calls?.[0]?.request) {
+        const req = parsed.entries[0].calls[0].request;
+        if (req.headers?.length > 0) {
+          reqHeadersHtml = `
+          <div class="info-section">
+            <div class="info-label">Request Headers</div>
+            <table class="cookies-table">
+              <thead><tr><th>Name</th><th>Value</th></tr></thead>
+              <tbody>${req.headers.map((h: any) => `<tr><td>${h.name}</td><td>${h.value}</td></tr>`).join('')}</tbody>
+            </table>
+          </div>`;
+        }
+        if (req.body) {
+          let bodyContent = req.body;
+          try { bodyContent = JSON.stringify(JSON.parse(req.body), null, 2); } catch {}
+          reqBodyHtml = `
+          <div class="info-section">
+            <div class="info-label">Request Body</div>
+            <div class="info-value">${escapeHtml(bodyContent)}</div>
+          </div>`;
+        }
+      }
+      
+      // Response cookies
       if (parsed?.cookies?.length > 0) {
-        cookiesHtml = `
+        respCookiesHtml = `
         <div class="info-section">
           <div class="info-label">Cookies</div>
           <table class="cookies-table">
@@ -93,24 +120,38 @@ export function generateHtml(data: ScreenshotData[]): string {
         </div>`;
       }
       
-      let requestHtml = '';
-      if (parsed?.entries?.[0]?.calls?.[0]?.request) {
-        const req = parsed.entries[0].calls[0].request;
-        requestHtml = `
+      // Response headers
+      let respHeadersHtml = '';
+      if (parsed?.entries?.[0]?.calls?.[0]?.response?.headers?.length > 0) {
+        const headers = parsed.entries[0].calls[0].response.headers;
+        respHeadersHtml = `
         <div class="info-section">
-          <div class="info-label">Request</div>
-          <div class="info-value">${req.method || 'GET'} ${req.url || ''}</div>
+          <div class="info-label">Response Headers</div>
+          <table class="cookies-table">
+            <thead><tr><th>Name</th><th>Value</th></tr></thead>
+            <tbody>${headers.map((h: any) => `<tr><td>${h.name}</td><td>${h.value}</td></tr>`).join('')}</tbody>
+          </table>
         </div>`;
       }
       
+      // Response body - extract actual body content (exclude metadata already shown)
       let responseBody = '';
-      if (parsed?.entries?.[0]?.calls?.[0]?.response) {
-        const res = parsed.entries[0].calls[0].response;
-        responseBody = `
-        <div class="info-section">
-          <div class="info-label">Response Body</div>
-          <div class="info-value">${escapeHtml(JSON.stringify(res.body || res, null, 2))}</div>
-        </div>`;
+      const respObj = parsed?.entries?.[0]?.calls?.[0]?.response;
+      if (respObj) {
+        const metaFields = ['certificate', 'cookies', 'headers', 'http_version', 'status', 'timings'];
+        const bodyData: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(respObj)) {
+          if (!metaFields.includes(key)) {
+            bodyData[key] = value;
+          }
+        }
+        if (Object.keys(bodyData).length > 0) {
+          responseBody = `
+          <div class="info-section">
+            <div class="info-label">Response Body</div>
+            <div class="info-value">${escapeHtml(JSON.stringify(bodyData, null, 2))}</div>
+          </div>`;
+        }
       }
       
       const statusClass = resp.status < 300 ? 'status-2xx' : resp.status < 400 ? 'status-4xx' : 'status-5xx';
@@ -127,8 +168,10 @@ export function generateHtml(data: ScreenshotData[]): string {
         <span class="http-status ${statusClass}">${resp.status}</span>
       </div>
       <div class="http-body">
-        ${requestHtml}
-        ${cookiesHtml}
+        ${reqHeadersHtml}
+        ${reqBodyHtml}
+        ${respHeadersHtml}
+        ${respCookiesHtml}
         ${responseBody}
         <div class="info-section">
           <div class="info-label">Duration</div>
