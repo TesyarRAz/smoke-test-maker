@@ -5,6 +5,7 @@ import type { HttpResponseData, DatabaseResult } from '../types/output.js';
 export interface ScreenshotData {
   httpResponse: HttpResponseData | null;
   databases: DatabaseResult[];
+  requestBody?: string;
 }
 
 export interface HtmlGeneratorOptions {
@@ -65,7 +66,28 @@ export function generateHtml(data: ScreenshotData[]): string {
     .db-results tr:hover { background: #f8f9fa; }
     
     .card-number { display: inline-block; background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 12px; }
+    .pre-output { border-left: 4px solid #28a745; }
+    .post-output { border-left: 4px solid #ffc107; }
+    .db-card.pre-output .db-action { background: #28a745; }
+    .db-card.post-output .db-action { background: #ffc107; color: #333; }
+    
+    .tabs-nav { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tab-btn { padding: 8px 16px; border: none; background: #e9ecef; cursor: pointer; font-size: 12px; font-weight: 500; color: #495057; border-radius: 4px 4px 0 0; }
+    .tab-btn:hover { background: #dee2e6; }
+    .tab-btn.active { background: #007bff; color: white; }
+    .tab-content { display: none; padding: 12px; background: #f8f9fa; border-radius: 0 0 4px 4px; }
+    .tab-content.active { display: block; }
   </style>
+  <script>
+  function showTab(carouselId, tabId) {
+    var container = document.getElementById(carouselId);
+    if (!container) return;
+    container.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+    container.querySelectorAll('.tab-content').forEach(function(tab) { tab.classList.remove('active'); });
+    container.querySelector('.tab-btn[data-tab="' + tabId + '"]').classList.add('active');
+    container.querySelector('.tab-content[data-tab="' + tabId + '"]').classList.add('active');
+  }
+  </script>
 </head>
 <body>
   <div class="container">
@@ -76,36 +98,66 @@ export function generateHtml(data: ScreenshotData[]): string {
 
   let cardNum = 1;
   for (const d of items) {
+    // Split databases into pre-output and post-output
+    const preOutputs = d.databases.filter(db => db.action === 'pre-output' || db.action === 'output');
+    const postOutputs = d.databases.filter(db => db.action === 'post-output');
+    
+    // 1. PRE-OUTPUT first
+    for (const db of preOutputs) {
+      const rows = db.result?.rows || [];
+      let tableHtml = '';
+      if (rows.length > 0) {
+        const cols = Object.keys(rows[0]);
+        tableHtml = `
+        <div class="db-results">
+          <table>
+            <thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+            <tbody>${rows.map(r => `<tr>${cols.map(c => `<td>${r[c] ?? ''}</td>`).join('')}</tr>`).join('')}</tbody>
+          </table>
+        </div>`;
+      }
+      
+      html += `
+    <div class="section-title"><span class="card-number">${cardNum++}</span>Database - ${db.type}</div>
+    <div class="db-card pre-output">
+      <div class="db-header">
+        <span class="db-type">${db.type}</span>
+        <span class="db-action">${db.action}</span>
+      </div>
+      <div class="db-body">
+        <div class="db-query">${escapeHtml(db.query)}</div>
+        ${tableHtml || '<p style="color:#666;font-size:12px;">No results</p>'}
+      </div>
+    </div>`;
+    }
+    
+    // 2. HTTP REQUEST/RESPONSE with tabs
     if (d.httpResponse) {
       const resp = d.httpResponse;
       let parsed: any = null;
-      try { parsed = JSON.parse(resp.body); } catch {}
+      try { parsed = typeof resp.body === "string" ? JSON.parse(resp.body) : resp.body; } catch {}
       
       let respCookiesHtml = '';
-      // Request headers & body
-      let reqHeadersHtml = '';
       let reqBodyHtml = '';
-      if (parsed?.entries?.[0]?.calls?.[0]?.request) {
-        const req = parsed.entries[0].calls[0].request;
-        if (req.headers?.length > 0) {
-          reqHeadersHtml = `
-          <div class="info-section">
-            <div class="info-label">Request Headers</div>
-            <table class="cookies-table">
-              <thead><tr><th>Name</th><th>Value</th></tr></thead>
-              <tbody>${req.headers.map((h: any) => `<tr><td>${h.name}</td><td>${h.value}</td></tr>`).join('')}</tbody>
-            </table>
-          </div>`;
-        }
-        if (req.body) {
-          let bodyContent = req.body;
-          try { bodyContent = JSON.stringify(JSON.parse(req.body), null, 2); } catch {}
-          reqBodyHtml = `
+      let reqHeadersHtml = '';
+      if (d.requestBody) {
+        let bodyContent = d.requestBody;
+        try { bodyContent = JSON.stringify(JSON.parse(d.requestBody), null, 2); } catch {}
+        reqBodyHtml = `
           <div class="info-section">
             <div class="info-label">Request Body</div>
             <div class="info-value">${escapeHtml(bodyContent)}</div>
           </div>`;
-        }
+      }
+      if (parsed?.entries?.[0]?.request?.headers?.length > 0) {
+        reqHeadersHtml = `
+        <div class="info-section">
+          <div class="info-label">Request Headers</div>
+          <table class="cookies-table">
+            <thead><tr><th>Name</th><th>Value</th></tr></thead>
+            <tbody>${parsed.entries[0].request.headers.map((h: any) => `<tr><td>${h.name}</td><td>${h.value}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>`;
       }
       
       // Response cookies
@@ -122,8 +174,8 @@ export function generateHtml(data: ScreenshotData[]): string {
       
       // Response headers
       let respHeadersHtml = '';
-      if (parsed?.entries?.[0]?.calls?.[0]?.response?.headers?.length > 0) {
-        const headers = parsed.entries[0].calls[0].response.headers;
+      if (parsed?.entries?.[0]?.response?.headers?.length > 0) {
+        const headers = parsed.entries[0].response.headers;
         respHeadersHtml = `
         <div class="info-section">
           <div class="info-label">Response Headers</div>
@@ -136,7 +188,7 @@ export function generateHtml(data: ScreenshotData[]): string {
       
       // Response body - extract actual body content (exclude metadata already shown)
       let responseBody = '';
-      const respObj = parsed?.entries?.[0]?.calls?.[0]?.response;
+      const respObj = parsed?.entries?.[0]?.response;
       if (respObj) {
         const metaFields = ['certificate', 'cookies', 'headers', 'http_version', 'status', 'timings'];
         const bodyData: Record<string, unknown> = {};
@@ -155,7 +207,8 @@ export function generateHtml(data: ScreenshotData[]): string {
       }
       
       const statusClass = resp.status < 300 ? 'status-2xx' : resp.status < 400 ? 'status-4xx' : 'status-5xx';
-      const method = parsed?.entries?.[0]?.calls?.[0]?.request?.method || 'GET';
+      const method = parsed?.entries?.[0]?.request?.method || 'GET';
+      const uniqueId = 'card-' + cardNum;
       
       html += `
     <div class="section-title"><span class="card-number">${cardNum++}</span>HTTP Request & Response</div>
@@ -163,25 +216,35 @@ export function generateHtml(data: ScreenshotData[]): string {
       <div class="http-header">
         <div>
           <span class="http-method method-${method.toLowerCase()}">${method}</span>
-          <span class="http-url">${parsed?.entries?.[0]?.calls?.[0]?.request?.url || 'N/A'}</span>
+          <span class="http-url">${parsed?.entries?.[0]?.request?.url || 'N/A'}</span>
         </div>
         <span class="http-status ${statusClass}">${resp.status}</span>
       </div>
       <div class="http-body">
-        ${reqHeadersHtml}
-        ${reqBodyHtml}
-        ${respHeadersHtml}
-        ${respCookiesHtml}
-        ${responseBody}
-        <div class="info-section">
-          <div class="info-label">Duration</div>
-          <div class="info-value">${resp.duration}ms</div>
+        ${reqBodyHtml || ''}
+        ${responseBody || '<p style="color:#666;font-size:12px;">Response body not captured</p>'}
+      </div>
+      <div class="tabs-container" id="${uniqueId}">
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="req-headers" onclick="showTab('${uniqueId}', 'req-headers')">Request Headers</button>
+          <button class="tab-btn" data-tab="resp-headers" onclick="showTab('${uniqueId}', 'resp-headers')">Response Headers</button>
+          <button class="tab-btn" data-tab="cookies" onclick="showTab('${uniqueId}', 'cookies')">Cookies</button>
+          <button class="tab-btn" data-tab="duration" onclick="showTab('${uniqueId}', 'duration')">Duration</button>
+        </div>
+        <div class="tab-content active" data-tab="req-headers">${reqHeadersHtml || '<p style="color:#666;font-size:12px;">No request headers</p>'}</div>
+        <div class="tab-content" data-tab="resp-headers">${respHeadersHtml || '<p style="color:#666;font-size:12px;">No response headers</p>'}</div>
+        <div class="tab-content" data-tab="cookies">${respCookiesHtml || '<p style="color:#666;font-size:12px;">No cookies</p>'}</div>
+        <div class="tab-content" data-tab="duration">
+          <div class="info-section">
+            <div class="info-label">Duration</div>
+            <div class="info-value">${resp.duration}ms</div>
+          </div>
         </div>
       </div>
     </div>`;
     }
     
-    for (const db of d.databases) {
+    for (const db of postOutputs) {
       const rows = db.result?.rows || [];
       let tableHtml = '';
       if (rows.length > 0) {
@@ -197,7 +260,7 @@ export function generateHtml(data: ScreenshotData[]): string {
       
       html += `
     <div class="section-title"><span class="card-number">${cardNum++}</span>Database - ${db.type}</div>
-    <div class="db-card">
+    <div class="db-card post-output">
       <div class="db-header">
         <span class="db-type">${db.type}</span>
         <span class="db-action">${db.action}</span>

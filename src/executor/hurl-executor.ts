@@ -81,7 +81,7 @@ async function executeEntry(
   const tempFile = `/tmp/smoke-test-${Date.now()}.hurl`;
   writeFileSync(tempFile, hurlContent);
   
-  const args = ['--json', '--test'];
+  const args = ['--json', '--test', '--very-verbose'];
   
   for (const [key, value] of Object.entries(variables)) {
     args.push('--variable', `${key}=${value}`);

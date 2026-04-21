@@ -121,7 +121,8 @@ async function run() {
 
       entryData = {
         httpResponse: result.response,
-        databases
+        databases,
+        requestBody: entry.request?.body
       };
       accumulatedData.push(entryData);
 

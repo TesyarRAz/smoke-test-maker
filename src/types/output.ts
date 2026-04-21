@@ -3,7 +3,7 @@ import type { DatabaseType, QueryResult } from './database.js';
 export interface HttpResponseData {
   status: number;
   headers: Record<string, string>;
-  body: string;
+  body: string | Record<string, unknown>;
   duration: number;
 }
 

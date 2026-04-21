@@ -353,6 +353,38 @@ Wave 2 (Core execution + output):
 
 ---
 
+## TODOs (continued)
+
+- [x] 14. Fix Multi-line JSON Body Parser Bug
+
+  **What to do**:
+  - Fix parser in `src/parser/hurl-parser.ts` to capture full JSON body (not just first line)
+  - Current bug: Body starting with `{` only captures first line `"title": "Test Title",`
+  - Expected: Full JSON body `{"title": "Test Title", "body": "Test Body", "userId": 1}`
+  - Add test: Verify POST/PUT with JSON body works correctly
+
+  **Must NOT do**:
+  - Don't break existing GET functionality
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: NO
+  - **Blocks**: Task 15
+  - **Blocked By**: Task 13
+
+  **References**:
+  - `src/parser/hurl-parser.ts:103-106` - Current body capture logic
+  - `test/jsonplaceholder_post.hurl` - Test file for verification
+
+  **Acceptance Criteria**:
+  - [ ] hurl test/jsonplaceholder_post.hurl → All 3 entries pass
+  - [ ] node dist/index.js test/jsonplaceholder_post.hurl → 3/3 successful
+
+---
+
 ## Success Criteria
 
 ### Verification Commands

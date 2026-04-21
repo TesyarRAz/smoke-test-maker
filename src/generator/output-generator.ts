@@ -2,6 +2,14 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import type { CaseOutput, HttpResponseData, DatabaseResult } from '../types/output.js';
 
+function formatBody(body: string): string | Record<string, unknown> {
+  try {
+    return JSON.parse(body);
+  } catch {
+    return body;
+  }
+}
+
 export interface OutputOptions {
   outputDir: string;
   caseName?: string;
@@ -14,15 +22,16 @@ export function generateOutput(
   databases: DatabaseResult[],
   options: OutputOptions
 ): CaseOutput {
+  const formattedBody = response ? (typeof response.body === 'string' ? formatBody(response.body) : response.body) : '';
   return {
     name: options.caseName || `case${entryIndex}`,
     entryIndex,
     status: success ? 'pass' : 'fail',
-    response: response || {
-      status: 0,
-      headers: {},
-      body: '',
-      duration: 0
+    response: {
+      status: response?.status || 0,
+      headers: response?.headers || {},
+      body: formattedBody,
+      duration: response?.duration || 0
     },
     duration: response?.duration || 0,
     databases

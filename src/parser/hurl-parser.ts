@@ -4,7 +4,7 @@ import type { HurlFile, HurlEntry, CustomComment, HttpMethod, HurlHeader, HurlCa
 const METHOD_REGEX = /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s+(.+)$/i;
 const SECTION_REGEX = /^\[(Captures|Asserts|Options)\]$/i;
 const HTTP_STATUS_REGEX = /^HTTP\s+\d+$/i;
-const CUSTOM_COMMENT_REGEX = /#\s*(output|screenshot|pre-output|post-output):(postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)\|(.+)$/;
+const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)\|(.+)$/;
 const SKIP_REGEX = /^#\s*skip$/i;
 const HEADER_REGEX = /^([^:]+):\s*(.+)$/;
 
@@ -19,23 +19,25 @@ export function parseHurlFile(filepath: string): HurlFile {
   let postCommentLines: string[] = [];
   let inResponse = false;
   let lineNum = 0;
+  let inBody = false;
+  let bodyLines: string[] = [];
 
   for (const line of lines) {
     lineNum++;
     const trimmed = line.trim();
 
-    if (!trimmed || trimmed.startsWith('#')) {
+    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('>')) {
       if (SKIP_REGEX.test(trimmed)) {
         if (inResponse) {
           postCommentLines.push(trimmed);
         } else {
           commentLines.push(trimmed);
         }
-      } else if (CUSTOM_COMMENT_REGEX.test(trimmed)) {
+      } else if (CUSTOM_COMMENT_REGEX.test(line)) {
         if (inResponse) {
-          postCommentLines.push(trimmed);
+          postCommentLines.push(line);
         } else {
-          commentLines.push(trimmed);
+          commentLines.push(line);
         }
       }
       continue;
@@ -58,12 +60,14 @@ export function parseHurlFile(filepath: string): HurlFile {
       currentEntry = {
         index: entries.length + 1,
         request: { method, url },
-        rawContent: commentLines.join('\n')
+        rawContent: commentLines.join('\n') + (postCommentLines.length > 0 ? '\n' + postCommentLines.join('\n') : '')
       };
       commentLines = [];
       postCommentLines = [];
       inResponse = false;
       currentSection = null;
+      inBody = false;
+      bodyLines = [];
       continue;
     }
 
@@ -81,33 +85,50 @@ export function parseHurlFile(filepath: string): HurlFile {
     }
 
     if (currentEntry && trimmed) {
-      if (currentSection === 'Captures' && trimmed.includes(':')) {
-        const [name, query] = trimmed.split(':').map(s => s.trim());
-        currentEntry.captures!.push({ name, query });
-      } else if (currentSection === 'Asserts') {
-        currentEntry.asserts!.push({ query: trimmed, predicate: 'exists' });
-      } else if (currentSection === 'Options' && trimmed.includes(':')) {
-        const [key, value] = trimmed.split(':').map(s => s.trim());
-        (currentEntry.options as Record<string, unknown>)[key] = value;
-      } else if (!currentSection && trimmed.includes(':')) {
-        const headerMatch = trimmed.match(HEADER_REGEX);
-        if (headerMatch && currentEntry) {
-          if (!currentEntry.request.headers) {
-            currentEntry.request.headers = [];
-          }
-          currentEntry.request.headers.push({
-            name: headerMatch[1].trim(),
-            value: headerMatch[2].trim()
-          });
+      if (!currentSection && !inBody && trimmed === '{' && currentEntry.request.body === undefined) {
+        inBody = true;
+        bodyLines.push(trimmed);
+      } else if (inBody) {
+        bodyLines.push(trimmed);
+        if (trimmed === '}') {
+          currentEntry.request.body = bodyLines.join('\n');
+          inBody = false;
+          bodyLines = [];
         }
-      } else if (!currentSection && currentEntry.request.body === undefined) {
-        currentEntry.request.body = trimmed;
+      } else {
+        if (currentSection === 'Captures' && trimmed.includes(':')) {
+          const [name, query] = trimmed.split(':').map(s => s.trim());
+          currentEntry.captures!.push({ name, query });
+        } else if (currentSection === 'Asserts') {
+          currentEntry.asserts!.push({ query: trimmed, predicate: 'exists' });
+        } else if (currentSection === 'Options' && trimmed.includes(':')) {
+          const [key, value] = trimmed.split(':').map(s => s.trim());
+          (currentEntry.options as Record<string, unknown>)[key] = value;
+        } else if (!currentSection && trimmed.includes(':')) {
+          const headerMatch = trimmed.match(HEADER_REGEX);
+          if (headerMatch && currentEntry) {
+            if (!currentEntry.request.headers) {
+              currentEntry.request.headers = [];
+            }
+            currentEntry.request.headers.push({
+              name: headerMatch[1].trim(),
+              value: headerMatch[2].trim()
+            });
+          }
+        } else if (!currentSection && currentEntry.request.body === undefined) {
+          currentEntry.request.body = trimmed;
+        }
       }
     }
   }
 
   if (currentEntry) {
-    currentEntry.rawContent = (commentLines.join('\n') + (postCommentLines.length > 0 ? '\n' + postCommentLines.join('\n') : ''));
+    // Preserve rawContent if already set (from METHOD line processing), only append postCommentLines
+    if (currentEntry.rawContent) {
+      currentEntry.rawContent += (postCommentLines.length > 0 ? '\n' + postCommentLines.join('\n') : '');
+    } else {
+      currentEntry.rawContent = commentLines.join('\n') + (postCommentLines.length > 0 ? '\n' + postCommentLines.join('\n') : '');
+    }
     entries.push(currentEntry);
   }
 

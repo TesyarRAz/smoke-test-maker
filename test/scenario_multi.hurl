@@ -9,6 +9,7 @@ HTTP 200
 # Entry 2: multiple pre-output
 # pre-output:testdb:{dsn}|SELECT id FROM users
 # pre-output:testdb:{dsn}|SELECT id FROM products
+# screenshot
 GET https://httpbin.org/ip
 
 HTTP 200
