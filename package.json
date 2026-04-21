@@ -1,0 +1,27 @@
+{
+  "name": "smoke-test-maker",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "smoke-test-maker": "dist/index.js"
+  },
+  "dependencies": {
+    "commander": "^9.4.1",
+    "dotenv": "^16.0.4",
+    "html-to-image": "^1.11.13",
+    "jsdom": "^29.0.2",
+    "mongodb": "^5.7.0",
+    "mysql2": "^3.2.0",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^28.0.1",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js"
+  }
+}
