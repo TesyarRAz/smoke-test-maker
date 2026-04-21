@@ -1,15 +1,14 @@
 import { spawn } from 'child_process';
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { createWriteStream } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
+import { join } from 'path';
 import type { HurlFile } from '../types/hurl.js';
 import type { HttpResponseData } from '../types/output.js';
-import { resolveVariables } from '../resolver/variable-resolver.js';
 
 export interface ExecutionOptions {
   stopOnFailure: boolean;
   outputDir: string;
   variables: Record<string, string>;
+  inputFile: string;
 }
 
 export interface EntryResult {
@@ -23,137 +22,104 @@ export interface EntryResult {
 
 export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOptions): Promise<EntryResult[]> {
   const results: EntryResult[] = [];
-  const variables = { ...options.variables };
+  
+  // Run hurl for each entry separately
+  for (let i = 0; i < hurlFile.entries.length; i++) {
+    const entryNum = i + 1;
+    const args = [
+      '--from-entry', String(entryNum),
+      '--to-entry', String(entryNum)
+    ];
 
-  for (const entry of hurlFile.entries) {
-    const startTime = Date.now();
-    
-    try {
-      const result = await executeEntry(entry, variables, options);
-      results.push(result);
-      
-      Object.assign(variables, result.capturedVars);
-      
-      if (!result.success && options.stopOnFailure) {
-        console.error(`Stopping on failure at entry ${entry.index}`);
-        break;
-      }
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      results.push({
-        index: entry.index,
-        success: false,
-        response: null,
-        error: String(error),
-        duration,
-        capturedVars: {}
-      });
-      
-      if (options.stopOnFailure) {
-        console.error(`Stopping on error at entry ${entry.index}: ${error}`);
-        break;
-      }
+    for (const [key, value] of Object.entries(options.variables)) {
+      args.push('--variable', `${key}=${value}`);
     }
+
+    args.push(options.inputFile);
+
+    const { stdout, stderr, code, duration } = await runHurl(args);
+    
+    // Parse response from stdout
+    // stdout contains the response body (JSON or text)
+    // stderr contains the verbose output with status/headers
+    
+    let success = code === 0;
+    let status = 200;
+    let headers: Record<string, string> = {};
+    let body = stdout.trim();
+    
+    // Try to parse JSON body for pretty printing
+    try {
+      const parsed = JSON.parse(body);
+      body = JSON.stringify(parsed, null, 2);
+    } catch {
+      // Keep raw body if not JSON
+    }
+    
+    // Extract status from stderr (verbose output)
+    const statusMatch = stderr.match(/< HTTP\/[23] (\d{3})/);
+    if (statusMatch) {
+      status = parseInt(statusMatch[1], 10);
+    }
+    
+    // Parse headers from stderr
+    const headerMatches = stderr.matchAll(/< (\w+): (.+)/g);
+    for (const match of headerMatches) {
+      headers[match[1]] = match[2];
+    }
+
+    results.push({
+      index: entryNum,
+      success,
+      response: {
+        status,
+        headers,
+        body,
+        duration
+      },
+      error: success ? undefined : stderr,
+      duration,
+      capturedVars: {}
+    });
   }
 
   return results;
 }
 
-async function executeEntry(
-  entry: { index: number; request: { method: string; url: string; headers?: { name: string; value: string }[]; body?: string } },
-  variables: Record<string, string>,
-  options: ExecutionOptions
-): Promise<EntryResult> {
-  const startTime = Date.now();
-  
-  const url = resolveVariables(entry.request.url, variables);
-  const headers: string[] = [];
-  
-  if (entry.request.headers) {
-    for (const h of entry.request.headers) {
-      const name = resolveVariables(h.name, variables);
-      const value = resolveVariables(h.value, variables);
-      headers.push('-H', `${name}: ${value}`);
-    }
-  }
-  
-  const hurlContent = buildHurlContent(entry, url);
-  const tempFile = `/tmp/smoke-test-${Date.now()}.hurl`;
-  writeFileSync(tempFile, hurlContent);
-  
-  const args = ['--json', '--test', '--very-verbose'];
-  
-  for (const [key, value] of Object.entries(variables)) {
-    args.push('--variable', `${key}=${value}`);
-  }
-  
-  args.push(tempFile);
-  
+async function runHurl(args: string[]): Promise<{ stdout: string; stderr: string; code: number; duration: number }> {
   return new Promise((resolve) => {
+    const startTime = Date.now();
     const proc = spawn('hurl', args, {
       stdio: ['pipe', 'pipe', 'pipe']
     });
-    
+
     let stdout = '';
     let stderr = '';
-    
+
     proc.stdout.on('data', (data) => {
       stdout += data.toString();
     });
-    
+
     proc.stderr.on('data', (data) => {
       stderr += data.toString();
     });
-    
+
     proc.on('close', (code) => {
-      const duration = Date.now() - startTime;
-      const success = code === 0;
-      
-      const response: HttpResponseData = {
-        status: success ? 200 : 500,
-        headers: {},
-        body: stdout,
-        duration
-      };
-      
-      const capturedVars: Record<string, string> = {};
-      
       resolve({
-        index: entry.index,
-        success,
-        response,
-        error: success ? undefined : stderr,
-        duration,
-        capturedVars
+        stdout,
+        stderr,
+        code: code || 0,
+        duration: Date.now() - startTime
       });
     });
-    
+
     proc.on('error', (err) => {
-      const duration = Date.now() - startTime;
       resolve({
-        index: entry.index,
-        success: false,
-        response: null,
-        error: err.message,
-        duration,
-        capturedVars: {}
+        stdout: '',
+        stderr: err.message,
+        code: 1,
+        duration: Date.now() - startTime
       });
     });
   });
-}
-
-function buildHurlContent(entry: { request: { method: string; url: string; headers?: { name: string; value: string }[]; body?: string } }, url: string): string {
-  let content = `${entry.request.method} ${url}\n`;
-  
-  if (entry.request.headers) {
-    for (const h of entry.request.headers) {
-      content += `${h.name}: ${h.value}\n`;
-    }
-  }
-  
-  if (entry.request.body) {
-    content += `\n${entry.request.body}\n`;
-  }
-  
-  return content;
 }

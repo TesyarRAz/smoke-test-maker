@@ -6,6 +6,9 @@ HTTP 200
 [Asserts]
 status == 200
 
+# pre-output:testdb:{dsn}|SELECT id FROM users
+# post-output:testdb:{dsn}|SELECT id FROM products
+# screenshot
 GET https://jsonplaceholder.typicode.com/posts/1
 
 HTTP 200

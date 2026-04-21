@@ -13,7 +13,8 @@
     "jsdom": "^29.0.2",
     "mongodb": "^5.7.0",
     "mysql2": "^3.2.0",
-    "pg": "^8.11.0"
+    "pg": "^8.11.0",
+    "puppeteer": "^24.42.0"
   },
   "devDependencies": {
     "@types/jsdom": "^28.0.1",
@@ -22,6 +23,16 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/cli.js"
-  }
+    "start": "node dist/cli.js",
+    "prepublishOnly": "tsc",
+    "release": "npm run build && npm publish",
+    "release:dry": "npm run build && npm publish --dry-run"
+  },
+  "description": "CLI tool to generate smoke tests from .hurl files with DB query integration",
+  "keywords": [
+    "hurl",
+    "smoke-test",
+    "api-testing",
+    "http"
+  ]
 }

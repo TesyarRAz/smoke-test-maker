@@ -91,7 +91,8 @@ async function run() {
     const execOptions: ExecutionOptions = {
       stopOnFailure: options.stopOnFailure,
       outputDir: options.outputDir,
-      variables: options.variables
+      variables: options.variables,
+      inputFile: inputFile
     };
     
     const results: EntryResult[] = await executeHurlFile(hurlFile, execOptions);
@@ -129,7 +130,8 @@ async function run() {
       const screenshotActions = getScreenshotActions(databases);
       if (screenshotActions.length > 0) {
         const caseName = `case${entry.index}_screenshot_${screenshotActions.filter(a => a.action === 'screenshot' || a.action === 'pre-output' || a.action === 'post-output').length}`;
-        const html = generateHtml(accumulatedData);
+        // Only include current entry data, not all accumulated
+        const html = generateHtml([entryData]);
         const pngPath = await htmlToPng(html, { outputDir: options.outputDir, caseName });
         console.log(`Generated screenshot: ${pngPath}`);
       }

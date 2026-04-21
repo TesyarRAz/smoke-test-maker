@@ -207,7 +207,7 @@ export function generateHtml(data: ScreenshotData[]): string {
       }
       
       const statusClass = resp.status < 300 ? 'status-2xx' : resp.status < 400 ? 'status-4xx' : 'status-5xx';
-      const method = parsed?.entries?.[0]?.request?.method || 'GET';
+      const method = parsed?.entries?.[0]?.calls?.[0]?.request?.method || 'GET';
       const uniqueId = 'card-' + cardNum;
       
       html += `
@@ -216,7 +216,7 @@ export function generateHtml(data: ScreenshotData[]): string {
       <div class="http-header">
         <div>
           <span class="http-method method-${method.toLowerCase()}">${method}</span>
-          <span class="http-url">${parsed?.entries?.[0]?.request?.url || 'N/A'}</span>
+          <span class="http-url">${parsed?.entries?.[0]?.calls?.[0]?.request?.url || 'N/A'}</span>
         </div>
         <span class="http-status ${statusClass}">${resp.status}</span>
       </div>
@@ -293,8 +293,31 @@ function escapeHtml(text: string): string {
 
 export async function htmlToPng(html: string, options: HtmlGeneratorOptions): Promise<string> {
   try { mkdirSync(options.outputDir, { recursive: true }); } catch {}
-  const outputPath = join(options.outputDir, options.caseName + '_screenshot.html');
-  writeFileSync(outputPath, html);
-  console.log('Generated HTML: ' + outputPath);
-  return outputPath;
+  
+  // Write HTML file
+  const htmlPath = join(options.outputDir, options.caseName + '_screenshot.html');
+  writeFileSync(htmlPath, html);
+  console.log('Generated HTML: ' + htmlPath);
+  
+  // Generate PNG from HTML using Puppeteer
+  const pngPath = join(options.outputDir, options.caseName + '_screenshot.png');
+  
+  const puppeteer = await import('puppeteer');
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  
+  // Set content and wait for fonts to load
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+  
+  // Get full page screenshot
+  await page.screenshot({
+    path: pngPath,
+    fullPage: true,
+    type: 'png'
+  });
+  
+  await browser.close();
+  console.log('Generated PNG: ' + pngPath);
+  
+  return pngPath;
 }
