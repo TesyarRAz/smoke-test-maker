@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "smoke-test-maker": "dist/index.js"
+    "smoke-test-maker": "bin/smoke-test-maker"
   },
   "dependencies": {
     "commander": "^9.4.1",
@@ -19,6 +19,7 @@
   "devDependencies": {
     "@types/jsdom": "^28.0.1",
     "@types/node": "^20.0.0",
+    "esbuild": "^0.28.0",
     "typescript": "^5.3.0"
   },
   "scripts": {
@@ -26,7 +27,8 @@
     "start": "node dist/cli.js",
     "prepublishOnly": "tsc",
     "release": "npm run build && npm publish",
-    "release:dry": "npm run build && npm publish --dry-run"
+    "release:dry": "npm run build && npm publish --dry-run",
+    "bundle": "node bundle.js"
   },
   "description": "CLI tool to generate smoke tests from .hurl files with DB query integration",
   "keywords": [
