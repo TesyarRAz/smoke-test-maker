@@ -110,8 +110,9 @@ async function run() {
       if (!entry) continue;
 
       const databases: DatabaseResult[] = [];
+      const mergedVariables = { ...options.variables, ...result.capturedVars };
       if (entry.customComments && entry.customComments.length > 0) {
-        const dbResult = await processCustomComments(entry, options.variables);
+        const dbResult = await processCustomComments(entry, mergedVariables);
         if (!dbResult.success) {
           console.error(`DB query failed for entry ${entry.index}: ${dbResult.error}`);
           databases.push(...dbResult.results);
@@ -123,7 +124,9 @@ async function run() {
       entryData = {
         httpResponse: result.response,
         databases,
-        requestBody: entry.request?.body
+        requestBody: entry.request?.body,
+        requestUrl: entry.request?.url,
+        requestMethod: entry.request?.method
       };
       accumulatedData.push(entryData);
 
@@ -166,7 +169,19 @@ async function run() {
     // Set exit code based on results
     const hasFailures = results.some(r => !r.success);
     if (hasFailures) {
-      console.error('\nSome entries failed');
+      console.error('\n=== Failed Entries ===');
+      for (const r of results) {
+        if (!r.success) {
+          console.error(`\nEntry ${r.index} FAILED:`);
+          if (r.error) {
+            // Print last 10 lines of error
+            const errLines = r.error.split('\n').slice(-10);
+            for (const line of errLines) {
+              console.error('  ' + line);
+            }
+          }
+        }
+      }
       success = false;
     }
 

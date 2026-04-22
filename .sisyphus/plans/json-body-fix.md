@@ -53,7 +53,7 @@ Fix `formatBody()` di `output-generator.ts` agar mengembalikan parsed JSON sebag
 
 ## TODOs
 
-- [ ] 1. Fix formatBody function di output-generator.ts
+- [x] 1. Fix formatBody function di output-generator.ts
 
   **What to do**:
   - Ubah return type dari `string` ke `string | Record<string, unknown>`
