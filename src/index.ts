@@ -4,7 +4,7 @@ import { parse } from 'dotenv';
 import { resolve, dirname, join } from 'path';
 import { parseHurlFile } from './parser/hurl-parser.js';
 import { executeHurlFile, type ExecutionOptions, type EntryResult } from './executor/hurl-executor.js';
-import { generateOutput, writeOutputFile } from './generator/output-generator.js';
+import { generateOutput, writeOutputFile, filterHeaders } from './generator/output-generator.js';
 import { processCustomComments, getScreenshotActions } from './processor/comment-processor.js';
 import { shouldSkipOutput, getSkippedEntries } from './handler/skip-handler.js';
 import { generateHtml, htmlToPng, type ScreenshotData } from './generator/html-generator.js';
@@ -127,7 +127,10 @@ async function run() {
       }
 
       entryData = {
-        httpResponse: result.response,
+        httpResponse: result.response ? {
+          ...result.response,
+          headers: filterHeaders(result.response.headers || {}, entry.showHeaders)
+        } : null,
         databases,
         requestBody: entry.request?.body,
         requestUrl: entry.request?.url,
@@ -151,7 +154,7 @@ async function run() {
           result.success,
           result.response,
           databases,
-          { outputDir: options.outputDir, caseName }
+          { outputDir: options.outputDir, caseName, showHeaders: entry.showHeaders }
         );
         
         const filepath = await writeOutputFile(output, { outputDir: options.outputDir });

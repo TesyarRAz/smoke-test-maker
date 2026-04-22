@@ -152,10 +152,12 @@ function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, c
   }
 
   let respHeadersHtml = '';
-  if (resp.headers && Object.keys(resp.headers).length > 0) {
+  const headers = resp.headers || {};
+  const filteredHeaders = Object.entries(headers);
+  if (filteredHeaders.length > 0) {
     respHeadersHtml = `<table class="cookies-table">
       <thead><tr><th>Name</th><th>Value</th></tr></thead>
-      <tbody>${Object.entries(resp.headers).map(([name, value]) => `<tr><td>${escapeHtml(name)}</td><td>${escapeHtml(value)}</td></tr>`).join('')}</tbody>
+      <tbody>${filteredHeaders.map(([name, value]) => `<tr><td>${escapeHtml(name)}</td><td>${escapeHtml(value)}</td></tr>`).join('')}</tbody>
     </table>`;
   } else {
     respHeadersHtml = '<p style="color:#666;font-size:12px;">No response headers</p>';

@@ -7,6 +7,7 @@ const HTTP_STATUS_REGEX = /^HTTP\s+\d+$/i;
 const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)\|(.+)$/;
 const SKIP_REGEX = /^#\s*skip$/i;
 const HEADER_REGEX = /^([^:]+):\s*(.+)$/;
+const SHOW_HEADER_REGEX = /^#\s*show-header:\s*(.+)$/i;
 
 export function parseHurlFile(filepath: string): HurlFile {
   const content = readFileSync(filepath, 'utf-8');
@@ -38,6 +39,14 @@ export function parseHurlFile(filepath: string): HurlFile {
           postCommentLines.push(line);
         } else {
           commentLines.push(line);
+        }
+      } else if (SHOW_HEADER_REGEX.test(trimmed)) {
+        if (inResponse) {
+          postCommentLines.push(trimmed);
+        } else if (currentEntry) {
+          currentEntry.rawContent = (currentEntry.rawContent ? currentEntry.rawContent + '\n' : '') + trimmed;
+        } else {
+          commentLines.push(trimmed);
         }
       }
       continue;
@@ -145,6 +154,7 @@ export function parseHurlFile(filepath: string): HurlFile {
 function processCustomComments(entries: HurlEntry[]): void {
   for (const entry of entries) {
     const customComments: CustomComment[] = [];
+    const showHeaders: string[] = [];
     const lines = entry.rawContent.split('\n');
 
     for (const line of lines) {
@@ -157,10 +167,21 @@ function processCustomComments(entries: HurlEntry[]): void {
           query: match[4]
         });
       }
+
+      // Handle show-header directives
+      const showHeaderMatch = line.match(SHOW_HEADER_REGEX);
+      if (showHeaderMatch) {
+        const raw = showHeaderMatch[1];
+        const headers = raw.split(',').map(s => s.trim()).filter(Boolean);
+        showHeaders.push(...headers);
+      }
     }
 
     if (customComments.length > 0) {
       entry.customComments = customComments;
+    }
+    if (showHeaders.length > 0) {
+      entry.showHeaders = showHeaders;
     }
   }
 }

@@ -1,5 +1,6 @@
 # Entry 1: Simple GET request (normal entry)
 GET https://httpbin.org/get
+# show-header:Content-Type
 
 HTTP 200
 [Asserts]
@@ -13,6 +14,7 @@ HTTP 204
 
 # Entry 3: GET with custom DB query comment (will try postgres if available)
 GET https://httpbin.org/uuid
+# show-header:*
 
 HTTP 200
 [Asserts]

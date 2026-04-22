@@ -53,6 +53,7 @@ export interface HurlEntry {
   customComments?: CustomComment[];
   skip?: boolean;
   rawContent: string;
+  showHeaders?: string[];
 }
 
 export interface HurlFile {

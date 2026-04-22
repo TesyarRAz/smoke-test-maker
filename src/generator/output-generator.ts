@@ -2,6 +2,24 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import type { CaseOutput, HttpResponseData, DatabaseResult } from '../types/output.js';
 
+export function filterHeaders(headers: Record<string, string>, showHeaders?: string[]): Record<string, string> {
+  if (!showHeaders || showHeaders.length === 0) {
+    return {};
+  }
+  if (showHeaders.includes('*')) {
+    return headers;
+  }
+
+  const allowed = new Set(showHeaders.map(h => h.toLowerCase()));
+  const filtered: Record<string, string> = {};
+  for (const [name, value] of Object.entries(headers)) {
+    if (allowed.has(name.toLowerCase())) {
+      filtered[name] = value;
+    }
+  }
+  return filtered;
+}
+
 function formatBody(body: string): string | Record<string, unknown> {
   try {
     return JSON.parse(body);
@@ -13,6 +31,7 @@ function formatBody(body: string): string | Record<string, unknown> {
 export interface OutputOptions {
   outputDir: string;
   caseName?: string;
+  showHeaders?: string[];
 }
 
 export function generateOutput(
@@ -23,13 +42,15 @@ export function generateOutput(
   options: OutputOptions
 ): CaseOutput {
   const formattedBody = response ? (typeof response.body === 'string' ? formatBody(response.body) : response.body) : '';
+  const headers = response?.headers || {};
+  const filteredHeaders = filterHeaders(headers, options.showHeaders);
   return {
     name: options.caseName || `case${entryIndex}`,
     entryIndex,
     status: success ? 'pass' : 'fail',
     response: {
       status: response?.status || 0,
-      headers: response?.headers || {},
+      headers: filteredHeaders,
       body: formattedBody,
       duration: response?.duration || 0
     },
