@@ -4,6 +4,7 @@ import type { HttpResponseData } from '../types/output.js';
 
 export interface ExecutionOptions {
   stopOnFailure: boolean;
+  strict: boolean;
   outputDir: string;
   variables: Record<string, string>;
   inputFile: string;

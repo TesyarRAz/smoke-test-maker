@@ -16,6 +16,7 @@ interface CliOptions {
   envFile?: string;
   outputDir: string;
   stopOnFailure: boolean;
+  strict: boolean;
   variables: Record<string, string>;
 }
 
@@ -30,6 +31,7 @@ async function run() {
     .option('-e, --env <path>', 'Path to .env file')
     .option('-o, --output-dir <path>', 'Output directory', './output')
     .option('-s, --stop-on-failure', 'Stop execution on first failure', false)
+    .option('--strict', 'Exit with error if any case fails', false)
     .option('-v, --variable <key=value>', 'Set variable (can be repeated)', (val: string, prev: string[]) => {
       if (!prev) prev = [];
       prev.push(val);
@@ -73,6 +75,7 @@ async function run() {
     envFile: opts.env,
     outputDir: opts.outputDir || './output',
     stopOnFailure: opts.stopOnFailure || false,
+    strict: opts.strict || false,
     variables
   };
 
@@ -92,7 +95,8 @@ async function run() {
       stopOnFailure: options.stopOnFailure,
       outputDir: options.outputDir,
       variables: options.variables,
-      inputFile: inputFile
+      inputFile: inputFile,
+      strict: options.strict
     };
     
     const results: EntryResult[] = await executeHurlFile(hurlFile, execOptions);
@@ -168,6 +172,19 @@ async function run() {
 
     // Set exit code based on results
     const hasFailures = results.some(r => !r.success);
+    
+    // Strict mode: print errors to stderr and exit with error
+    if (options.strict && hasFailures) {
+      const failedResults = results.filter(r => !r.success);
+      for (const r of failedResults) {
+        if (r.error) {
+          console.error(`\n=== Entry ${r.index} Error ===`);
+          console.error(r.error);
+        }
+      }
+      process.exit(1);
+    }
+    
     if (hasFailures) {
       console.error('\n=== Failed Entries ===');
       for (const r of results) {

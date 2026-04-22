@@ -8,6 +8,7 @@ export interface CliOptions {
   envFile?: string;
   outputDir: string;
   stopOnFailure: boolean;
+  strict: boolean;
   variables: Record<string, string>;
 }
 
@@ -24,6 +25,7 @@ export function parseCliArgs(args: string[]): CliOptions {
     .option('-e, --env <path>', 'Path to .env file')
     .option('-o, --output-dir <path>', 'Output directory', './output')
     .option('-s, --stop-on-failure', 'Stop execution on first failure', false)
+    .option('--strict', 'Exit with error if any case fails', false)
     .option('-v, --variable <key=value>', 'Set variable (can be repeated)', (val: string, prev: string[]) => {
       if (!prev) prev = [];
       prev.push(val);
@@ -67,6 +69,7 @@ export function parseCliArgs(args: string[]): CliOptions {
     envFile: opts.env,
     outputDir: opts.outputDir || './output',
     stopOnFailure: opts.stopOnFailure || false,
+    strict: opts.strict || false,
     variables
   };
 
