@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { parse } from 'dotenv';
-import { resolve } from 'path';
+import { resolve, dirname, join } from 'path';
 
 export interface CliOptions {
   inputFile: string;
@@ -64,10 +64,14 @@ export function parseCliArgs(args: string[]): CliOptions {
     }
   }
 
+  // Derive the default output directory from the input file location
+  const defaultOutputDir = join(dirname(inputFile), 'output');
+
   cliOptions = {
     inputFile,
     envFile: opts.env,
-    outputDir: opts.outputDir || './output',
+    // Use user-provided outputDir when supplied, otherwise derive from input file
+    outputDir: (opts.outputDir ?? defaultOutputDir),
     stopOnFailure: opts.stopOnFailure || false,
     strict: opts.strict || false,
     variables

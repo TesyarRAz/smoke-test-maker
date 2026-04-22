@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { parse } from 'dotenv';
-import { resolve } from 'path';
+import { resolve, dirname, join } from 'path';
 import { parseHurlFile } from './parser/hurl-parser.js';
 import { executeHurlFile, type ExecutionOptions, type EntryResult } from './executor/hurl-executor.js';
 import { generateOutput, writeOutputFile } from './generator/output-generator.js';
@@ -29,7 +29,7 @@ async function run() {
     .version('1.0.0')
     .argument('<input>', 'Path to .hurl file')
     .option('-e, --env <path>', 'Path to .env file')
-    .option('-o, --output-dir <path>', 'Output directory', './output')
+    .option('-o, --output-dir <path>', 'Output directory')
     .option('-s, --stop-on-failure', 'Stop execution on first failure', false)
     .option('--strict', 'Exit with error if any case fails', false)
     .option('-v, --variable <key=value>', 'Set variable (can be repeated)', (val: string, prev: string[]) => {
@@ -70,12 +70,13 @@ async function run() {
     }
   }
 
+  const defaultOutputDir = join(dirname(inputFile), 'output');
   const options: CliOptions = {
     inputFile,
     envFile: opts.env,
-    outputDir: opts.outputDir || './output',
-    stopOnFailure: opts.stopOnFailure || false,
-    strict: opts.strict || false,
+    outputDir: (opts.outputDir ?? defaultOutputDir),
+    stopOnFailure: (opts.stopOnFailure ?? false),
+    strict: (opts.strict ?? false),
     variables
   };
 
