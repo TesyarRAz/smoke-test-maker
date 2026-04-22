@@ -29,7 +29,7 @@ export interface QueryResult {
 
 export interface DatabaseConnection {
   type: DatabaseType;
-  connect(): Promise<void>;
+  connect(connectionString?: string): Promise<void>;
   disconnect(): Promise<void>;
   query(sql: string): Promise<QueryResult>;
 }

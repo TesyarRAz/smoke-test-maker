@@ -1,6 +1,6 @@
 # TCC-01: multiple pre-output
-# pre-output:testdb:{dsn}|SELECT id FROM users
-# post-output:testdb:{dsn}|SELECT id FROM products
+# pre-output:postgres:{dsn}|SELECT id FROM users
+# post-output:postgres:{dsn}|SELECT id FROM products
 # screenshot
 POST {{BASE_URL}}/posts
 Content-Type: application/json

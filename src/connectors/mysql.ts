@@ -6,9 +6,10 @@ export class MysqlConnector implements DatabaseConnection {
   private connection: mysql.Connection | null = null;
   private connected = false;
 
-  async connect(): Promise<void> {
+  async connect(connectionString?: string): Promise<void> {
+    const dsn = connectionString || process.env.MYSQL_URL || 'mysql://root:password@localhost:3306/mysql';
     this.connection = await mysql.createConnection({
-      uri: 'mysql://mock:mock@localhost:3306/mock'
+      uri: dsn
     });
     this.connected = true;
   }

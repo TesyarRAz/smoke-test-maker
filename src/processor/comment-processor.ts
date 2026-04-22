@@ -1,7 +1,10 @@
 import type { CustomComment, HurlEntry } from '../types/hurl.js';
 import type { DatabaseResult } from '../types/output.js';
+import type { DatabaseConnection } from '../types/database.js';
 import { createConnector } from '../connectors/index.js';
 import { resolveDsn, resolveQuery } from '../resolver/variable-resolver.js';
+
+const connectorCache = new Map<string, DatabaseConnection>();
 
 export interface ProcessResult {
   success: boolean;
@@ -26,8 +29,12 @@ export async function processCustomComments(
       const dsn = resolveDsn(comment.dsnVariable, variables);
       const query = resolveQuery(comment.query, variables);
       
-      const connector = createConnector(comment.dbType);
-      await connector.connect();
+      let connector = connectorCache.get(dsn);
+      if (!connector) {
+        connector = createConnector(comment.dbType);
+        await connector.connect(dsn);
+        connectorCache.set(dsn, connector);
+      }
       
       let queryResult;
       if (comment.dbType === 'mongodb') {
@@ -41,8 +48,6 @@ export async function processCustomComments(
         queryResult = await connector.query(query);
       }
       
-      await connector.disconnect();
-      
       results.push({
         order: order++,
         type: comment.dbType,
@@ -51,11 +56,7 @@ export async function processCustomComments(
         result: queryResult
       });
     } catch (error) {
-      return {
-        success: false,
-        results,
-        error: `Failed to process ${comment.dbType} query: ${error}`
-      };
+      throw new Error(`DB connection error (${comment.dbType}): ${error instanceof Error ? error.message : error}`);
     }
   }
 
@@ -76,4 +77,11 @@ export function getScreenshotActions(results: DatabaseResult[]): DatabaseResult[
     r.action === 'pre-output' || 
     r.action === 'post-output'
   );
+}
+
+export async function disconnectAll(): Promise<void> {
+  for (const [, connector] of connectorCache) {
+    await connector.disconnect();
+  }
+  connectorCache.clear();
 }

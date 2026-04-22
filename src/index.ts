@@ -6,7 +6,7 @@ import { existsSync } from 'fs';
 import { parseHurlFile } from './parser/hurl-parser.js';
 import { executeHurlFile, type ExecutionOptions, type EntryResult } from './executor/hurl-executor.js';
 import { generateOutput, writeOutputFile, filterHeaders } from './generator/output-generator.js';
-import { processCustomComments, getScreenshotActions } from './processor/comment-processor.js';
+import { processCustomComments, getScreenshotActions, disconnectAll } from './processor/comment-processor.js';
 import { shouldSkipOutput, getSkippedEntries } from './handler/skip-handler.js';
 import { generateHtml, htmlToPng, type ScreenshotData } from './generator/html-generator.js';
 import type { CaseOutput, HttpResponseData, DatabaseResult, ExecutionResult } from './types/output.js';
@@ -130,12 +130,15 @@ async function run() {
       const databases: DatabaseResult[] = [];
       const mergedVariables = { ...options.variables, ...result.capturedVars };
       if (entry.customComments && entry.customComments.length > 0) {
-        const dbResult = await processCustomComments(entry, mergedVariables);
-        if (!dbResult.success) {
-          console.error(`DB query failed for entry ${entry.index}: ${dbResult.error}`);
+        try {
+          const dbResult = await processCustomComments(entry, mergedVariables);
+          if (!dbResult.success) {
+            throw new Error(dbResult.error);
+          }
           databases.push(...dbResult.results);
-        } else {
-          databases.push(...dbResult.results);
+        } catch (error) {
+          console.error(`Error: ${error instanceof Error ? error.message : error}`);
+          process.exit(1);
         }
       }
 
@@ -226,6 +229,7 @@ async function run() {
   }
 
   const exitCode = success ? 0 : 1;
+  await disconnectAll();
   process.exit(exitCode);
 }
 

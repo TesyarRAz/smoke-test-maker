@@ -6,8 +6,9 @@ export class MongodbConnector implements DatabaseConnection {
   private client: MongoClient | null = null;
   private connected = false;
 
-  async connect(): Promise<void> {
-    this.client = new MongoClient('mongodb://mock:mock@localhost:27017/mock');
+  async connect(connectionString?: string): Promise<void> {
+    const dsn = connectionString || process.env.MONGODB_URL || 'mongodb://localhost:27017/test';
+    this.client = new MongoClient(dsn);
     await this.client.connect();
     this.connected = true;
   }

@@ -6,9 +6,10 @@ export class PostgresConnector implements DatabaseConnection {
   private pool: Pool | null = null;
   private connected = false;
 
-  async connect(): Promise<void> {
+  async connect(connectionString?: string): Promise<void> {
+    const dsn = connectionString || process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/postgres';
     this.pool = new Pool({
-      connectionString: 'postgres://mock:mock@localhost:5432/mock',
+      connectionString: dsn,
       ssl: false
     });
     this.connected = true;
