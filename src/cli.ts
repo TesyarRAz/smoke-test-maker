@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { parse } from 'dotenv';
 import { resolve, dirname, join } from 'path';
+import { existsSync } from 'fs';
 
 export interface CliOptions {
   inputFile: string;
@@ -52,13 +53,25 @@ export function parseCliArgs(args: string[]): CliOptions {
     }
   }
 
+  // Auto-load .env from same folder as hurl file if not explicitly provided
+  let envPath: string | null = null;
   if (opts.env) {
-    const envPath = resolve(process.cwd(), opts.env);
+    envPath = resolve(process.cwd(), opts.env);
+  } else {
+    // Try .env in same folder as input file  
+    const autoEnvPath = join(dirname(inputFile), '.env');
+    if (existsSync(autoEnvPath)) {
+      envPath = autoEnvPath;
+    }
+  }
+
+  if (envPath) {
     try {
       const envConfig = parse(readFileSync(envPath));
       for (const [key, value] of Object.entries(envConfig)) {
         variables[key] = value;
       }
+      console.log('Loaded .env from:', envPath);
     } catch (err) {
       console.warn(`Warning: Could not load .env file: ${err}`);
     }

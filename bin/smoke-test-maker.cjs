@@ -57298,6 +57298,7 @@ var {
 var import_fs4 = require("fs");
 var import_dotenv = __toESM(require_main(), 1);
 var import_path3 = require("path");
+var import_fs5 = require("fs");
 
 // src/parser/hurl-parser.ts
 var import_fs = require("fs");
@@ -58119,13 +58120,22 @@ async function run() {
       }
     }
   }
+  let envPath = null;
   if (opts.env) {
-    const envPath = (0, import_path3.resolve)(process.cwd(), opts.env);
+    envPath = (0, import_path3.resolve)(process.cwd(), opts.env);
+  } else {
+    const autoEnvPath = (0, import_path3.join)((0, import_path3.dirname)(inputFile), ".env");
+    if ((0, import_fs5.existsSync)(autoEnvPath)) {
+      envPath = autoEnvPath;
+    }
+  }
+  if (envPath) {
     try {
       const envConfig = (0, import_dotenv.parse)((0, import_fs4.readFileSync)(envPath));
       for (const [key, value] of Object.entries(envConfig)) {
         variables[key] = value;
       }
+      console.log("Loaded .env from:", envPath);
     } catch (err) {
       console.warn(`Warning: Could not load .env file: ${err}`);
     }
