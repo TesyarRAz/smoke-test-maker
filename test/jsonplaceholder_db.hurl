@@ -1,6 +1,6 @@
 # GET with testdb queries (pre/post output)
 
-# pre-output:postgresdb:{{dsn}}|SELECT id FROM documents limit 1
+# pre-output:postgresdb:{{dsn}}|SELECT id,name FROM documents limit 1
 # post-output:postgresdb:{{dsn}}|SELECT id FROM documents limit 1
 # screenshot
 GET https://httpbin.org/get

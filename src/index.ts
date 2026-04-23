@@ -20,6 +20,8 @@ interface CliOptions {
   strict: boolean;
   variables: Record<string, string>;
   veryVerbose?: boolean;
+  displayMode?: string;
+  displayWidth?: number;
 }
 
 async function run() {
@@ -39,9 +41,25 @@ async function run() {
       prev.push(val);
       return prev;
     }, [] as string[])
-    .option('-d, --very-verbose', 'Print detailed debug information including DB connections', false)
+ .option('-d, --very-verbose', 'Print detailed debug information including DB connections', false)
+ .option('--display-mode <mode>', 'Display mode: vertical, horizontal, or grid', 'vertical')
+ .option('--display-width <width>', 'Display width in px', (val) => parseInt(val, 10), 1400)
 
-  program.parse(process.argv);
+program.parse(process.argv);
+
+// Forward CLI options to HTML generator if available
+const cliOptions: any = {
+  displayMode: (program as any).displayMode ?? 'vertical',
+  displayWidth: (program as any).displayWidth ?? 1400
+};
+const htmlGen: any = (globalThis as any).htmlGenerator;
+if (typeof htmlGen === 'function') {
+  try {
+    htmlGen(cliOptions);
+  } catch {
+    // ignore if html generator couldn't be invoked
+  }
+}
 
   const inputFile = program.args[0];
   const opts = program.opts();

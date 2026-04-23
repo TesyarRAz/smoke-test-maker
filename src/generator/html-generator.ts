@@ -13,9 +13,12 @@ export interface ScreenshotData {
 export interface HtmlGeneratorOptions {
   outputDir: string;
   caseName: string;
+  displayMode?: 'vertical' | 'horizontal' | 'grid';
+  displayWidth?: string;
 }
 
-export function generateHtml(data: ScreenshotData[]): string {
+export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'vertical' | 'horizontal' | 'grid'; displayWidth?: string } = {}): string {
+  const { displayMode = 'vertical', displayWidth = '1400px' } = options;
   const items = data.filter(d => d.httpResponse || d.databases.length > 0);
   
   let html = `<!DOCTYPE html>
@@ -26,7 +29,7 @@ export function generateHtml(data: ScreenshotData[]): string {
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', Arial, sans-serif; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-    .container { max-width: 1400px; margin: 0 auto; }
+    .container { max-width: ${displayWidth}; margin: 0 auto; }
     .header { background: white; padding: 24px; margin-bottom: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .header h1 { font-size: 28px; color: #333; margin-bottom: 8px; }
     .header p { color: #666; font-size: 14px; }
@@ -69,6 +72,22 @@ export function generateHtml(data: ScreenshotData[]): string {
     .tab-btn.active { color: #007bff; border-bottom-color: #007bff; }
     .tab-content { display: none; padding: 16px 20px; }
     .tab-content.active { display: block; }
+    /* Display Mode: vertical - label above value */
+    .display-vertical .form-row { display: flex; flex-direction: column; margin-bottom: 12px; }
+    .display-vertical .form-label { font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
+    .display-vertical .form-value { background: #f8f9fa; padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+    /* Display Mode: horizontal - label | value in rows */
+    .display-horizontal .form-row { display: flex; flex-direction: row; margin-bottom: 12px; align-items: center; gap: 12px; }
+    .display-horizontal .form-label { font-size: 12px; font-weight: 600; color: #666; min-width: 120px; }
+    .display-horizontal .form-value { background: #f8f9fa; padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; flex: 1; }
+    /* Display Mode: grid - cards layout */
+    .display-grid .db-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+    .display-grid .db-results table { display: none; }
+    .display-grid .form-card { background: #f8f9fa; padding: 12px; border-radius: 6px; }
+    .display-grid .form-label { font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
+    .display-grid .form-value { font-family: monospace; font-size: 12px; }
+    /* Scrollable table */
+    .scrollable-table { max-height: 300px; overflow-y: auto; }
   </style>
 </head>
 <body>
@@ -84,21 +103,27 @@ export function generateHtml(data: ScreenshotData[]): string {
   // Database outputs (pre-output)
   for (const d of items) {
     for (const db of d.databases.filter(db => db.action === 'pre-output')) {
-      html += generateDbCard(db, cardNum++);
+      html += generateDbCard(db, cardNum++, displayMode);
     }
   }
 
   // HTTP responses
   for (const d of items) {
     if (d.httpResponse) {
-      html += generateHttpCard(d.httpResponse, d.requestBody, cardNum++, d.requestUrl || 'N/A', d.requestMethod || 'GET');
+      html += generateHttpCard(
+        d.httpResponse,
+        d.requestBody,
+        cardNum++,
+        d.requestUrl || '',
+        d.requestMethod || 'GET'
+      );
     }
   }
 
   // Database outputs (post-output)
   for (const d of items) {
     for (const db of d.databases.filter(db => db.action === 'post-output')) {
-      html += generateDbCard(db, cardNum++);
+      html += generateDbCard(db, cardNum++, displayMode);
     }
   }
 
@@ -196,22 +221,37 @@ function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, c
     </div>`;
 }
 
-function generateDbCard(db: DatabaseResult, cardNum: number): string {
+function generateDbCard(db: DatabaseResult, cardNum: number, displayMode: 'vertical' | 'horizontal' | 'grid' = 'vertical'): string {
   const actionClass = db.action === 'pre-output' ? 'pre-output' : 'post-output';
   
   let resultsHtml = '';
   if (db.result.rows && db.result.rows.length > 0) {
     const fields = db.result.fields || [];
     const fieldNames = fields.map(f => f.name);
+    const rowCount = db.result.rows.length;
     
-    resultsHtml = `<div class="db-results">
-      <table>
-        <thead><tr>${fieldNames.map(f => `<th>${escapeHtml(f)}</th>`).join('')}</tr></thead>
-        <tbody>${db.result.rows.slice(0, 10).map(row => 
-          `<tr>${fieldNames.map(f => `<td>${escapeHtml(String(row[f] ?? ''))}</td>`).join('')}</tr>`
-        ).join('')}</tbody>
-      </table>
-    </div>`;
+    if (rowCount === 1) {
+      // Render as FORM (vertical layout - label above value)
+      const row = db.result.rows[0];
+      resultsHtml = `<div class="db-results display-vertical">
+        ${fieldNames.map(f => `
+          <div class="form-row">
+            <div class="form-label">${escapeHtml(f)}</div>
+            <div class="form-value">${escapeHtml(String(row[f] ?? ''))}</div>
+          </div>
+        `).join('')}
+      </div>`;
+    } else if (rowCount > 1) {
+      // Render as SCROLLABLE TABLE
+      resultsHtml = `<div class="db-results scrollable-table">
+        <table>
+          <thead><tr>${fieldNames.map(f => `<th>${escapeHtml(f)}</th>`).join('')}</tr></thead>
+          <tbody>${db.result.rows.slice(0, 10).map(row => 
+            `<tr>${fieldNames.map(f => `<td>${escapeHtml(String(row[f] ?? ''))}</td>`).join('')}</tr>`
+          ).join('')}</tbody>
+        </table>
+      </div>`;
+    }
   } else {
     resultsHtml = '<p style="color:#666;font-size:12px;">No results</p>';
   }
