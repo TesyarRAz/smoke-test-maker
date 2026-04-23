@@ -1,7 +1,8 @@
 # GET with testdb queries (pre/post output)
 
-# pre-output:postgres:{dsn}|SELECT id FROM users
-# post-output:postgres:{dsn}|SELECT id FROM products
+# pre-output:postgresdb:{{dsn}}|SELECT id FROM users
+# post-output:postgresdb:{{dsn}}|SELECT id FROM products
+# screenshot
 GET https://httpbin.org/get
 
 HTTP 200

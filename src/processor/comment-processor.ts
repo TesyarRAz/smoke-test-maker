@@ -14,7 +14,8 @@ export interface ProcessResult {
 
 export async function processCustomComments(
   entry: HurlEntry,
-  variables: Record<string, string>
+  variables: Record<string, string>,
+  veryVerbose?: boolean
 ): Promise<ProcessResult> {
   const results: DatabaseResult[] = [];
   
@@ -33,6 +34,10 @@ export async function processCustomComments(
       if (!connector) {
         connector = createConnector(comment.dbType);
         await connector.connect(dsn);
+        if (veryVerbose) {
+          console.log(`[DB] Establishing connection to ${dsn}...`);
+          console.log(`[DB] Connected to ${comment.dbType}`);
+        }
         connectorCache.set(dsn, connector);
       }
       

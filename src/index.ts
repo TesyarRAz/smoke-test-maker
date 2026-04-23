@@ -19,6 +19,7 @@ interface CliOptions {
   stopOnFailure: boolean;
   strict: boolean;
   variables: Record<string, string>;
+  veryVerbose?: boolean;
 }
 
 async function run() {
@@ -37,7 +38,8 @@ async function run() {
       if (!prev) prev = [];
       prev.push(val);
       return prev;
-    }, [] as string[]);
+    }, [] as string[])
+    .option('-d, --very-verbose', 'Print detailed debug information including DB connections', false)
 
   program.parse(process.argv);
 
@@ -90,7 +92,8 @@ async function run() {
     outputDir: (opts.outputDir ?? defaultOutputDir),
     stopOnFailure: (opts.stopOnFailure ?? false),
     strict: (opts.strict ?? false),
-    variables
+    variables,
+    veryVerbose: (opts as any).veryVerbose ?? false
   };
 
   const startTime = Date.now();
@@ -131,7 +134,7 @@ async function run() {
       const mergedVariables = { ...options.variables, ...result.capturedVars };
       if (entry.customComments && entry.customComments.length > 0) {
         try {
-          const dbResult = await processCustomComments(entry, mergedVariables);
+          const dbResult = await processCustomComments(entry, mergedVariables, options.veryVerbose);
           if (!dbResult.success) {
             throw new Error(dbResult.error);
           }
