@@ -21,12 +21,16 @@ export interface EntryResult {
 
 export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOptions): Promise<EntryResult[]> {
   const results: EntryResult[] = [];
+  // Accumulator for variables to pass into hurl for subsequent entries
+  // Start with the initial options.variables and extend with captures from each entry
+  let accumulatedVariables: Record<string, string> = { ...options.variables };
   
   for (let i = 0; i < hurlFile.entries.length; i++) {
     const entryNum = i + 1;
     const args = ['--json', '--very-verbose', '--from-entry', String(entryNum), '--to-entry', String(entryNum)];
 
-    for (const [key, value] of Object.entries(options.variables)) {
+    // Pass in all accumulated variables (initial + captures from previous entries)
+    for (const [key, value] of Object.entries(accumulatedVariables)) {
       args.push('--variable', `${key}=${value}`);
     }
 
@@ -80,6 +84,11 @@ export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOpti
     } catch {
       success = false;
       body = stdout;
+    }
+
+    // Merge any captured variables from this entry into the accumulator for subsequent iterations
+    if (capturedVars && Object.keys(capturedVars).length > 0) {
+      accumulatedVariables = { ...accumulatedVariables, ...capturedVars };
     }
 
     results.push({

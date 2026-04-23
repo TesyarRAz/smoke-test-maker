@@ -126,12 +126,14 @@ async function run() {
     let entryData: ScreenshotData | null = null;
 
     console.log('Processing outputs...');
+    let accumulatedVars = { ...options.variables };
+    
     for (const result of results) {
       const entry = hurlFile.entries.find(e => e.index === result.index);
       if (!entry) continue;
 
       const databases: DatabaseResult[] = [];
-      const mergedVariables = { ...options.variables, ...result.capturedVars };
+      const mergedVariables = { ...accumulatedVars, ...result.capturedVars };
       if (entry.customComments && entry.customComments.length > 0) {
         try {
           const dbResult = await processCustomComments(entry, mergedVariables, options.veryVerbose);
@@ -156,6 +158,10 @@ async function run() {
         requestMethod: entry.request?.method
       };
       accumulatedData.push(entryData);
+
+      if (result.capturedVars && Object.keys(result.capturedVars).length > 0) {
+        accumulatedVars = { ...accumulatedVars, ...result.capturedVars };
+      }
 
       const screenshotActions = getScreenshotActions(databases);
       if (screenshotActions.length > 0) {
