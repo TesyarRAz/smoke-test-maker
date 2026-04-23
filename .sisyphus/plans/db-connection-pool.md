@@ -21,15 +21,15 @@ Setiap case buat koneksi baru → inefficient
 
 ## TODOs
 
-- [ ] 1. Create connection pool manager di src/index.ts
+- [x] 1. Create connection pool manager di src/index.ts
 
   Collect DSNs upfront, create pools, store in Map
 
-- [ ] 2. Modify comment-processor untuk accept map
+- [x] 2. Modify comment-processor untuk accept map
 
   Accept connector map instead of creating new
 
-- [ ] 3. Cleanup: disconnect all pools at end
+- [x] 3. Cleanup: disconnect all pools at end
 
 ---
 
