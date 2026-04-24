@@ -38,7 +38,7 @@ export interface HurlOptions {
 
 export interface CustomComment {
   action: 'output' | 'screenshot' | 'pre-output' | 'post-output';
-  dbType: 'postgresdb' | 'mysql' | 'mongodb' | 'testdb';
+  dbType: 'postgres' | 'postgresdb' | 'mysql' | 'mongodb' | 'testdb';
   dsnVariable: string;
   query?: string;
 }

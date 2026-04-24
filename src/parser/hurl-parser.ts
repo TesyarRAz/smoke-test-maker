@@ -4,7 +4,7 @@ import type { HurlFile, HurlEntry, CustomComment, HttpMethod, HurlHeader, HurlCa
 const METHOD_REGEX = /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s+(.+)$/i;
 const SECTION_REGEX = /^\[(Captures|Asserts|Options)\]$/i;
 const HTTP_STATUS_REGEX = /^HTTP\s+\d+$/i;
-const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)(\|(.+))?$/;
+const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgres|postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)(\|(.+))?$/;
 const SCREENSHOT_ONLY_REGEX = /^#\s*screenshot$/i;
 const SKIP_REGEX = /^#\s*skip$/i;
 const HEADER_REGEX = /^([^:]+):\s*(.+)$/;
@@ -180,7 +180,7 @@ function processCustomComments(entries: HurlEntry[]): void {
       if (match) {
         customComments.push({
           action: match[1] as 'output' | 'screenshot',
-          dbType: match[2] as 'postgresdb' | 'mysql' | 'mongodb',
+          dbType: match[2] as 'postgres' | 'postgresdb' | 'mysql' | 'mongodb',
           dsnVariable: match[3],
           query: match[5]
         });

@@ -61,14 +61,14 @@ Build a CLI tool that transforms .hurl files into smoke tests with integrated da
 - Output generator: JSON files per case
 
 ### Definition of Done
-- [ ] CLI can parse a .hurl file and identify all entries
-- [ ] CLI executes each entry via hurl CLI and captures response
-- [ ] Custom comments (`# output:`, `# screenshot:`) are parsed correctly
-- [ ] DB queries execute using resolved variables from hurl scope
-- [ ] `# skip` marked entries execute but don't produce JSON output
-- [ ] Variables are substituted correctly, `\{` escapes literal `{`
-- [ ] Output JSON contains HTTP response + DB results
-- [ ] Tool stops on first failure (configurable)
+- [x] CLI can parse a .hurl file and identify all entries
+- [x] CLI executes each entry via hurl CLI and captures response
+- [x] Custom comments (`# output:`, `# screenshot:`) are parsed correctly
+- [x] DB queries execute using resolved variables from hurl scope
+- [x] `# skip` marked entries execute but don't produce JSON output
+- [x] Variables are substituted correctly, `\{` escapes literal `{`
+- [x] Output JSON contains HTTP response + DB results
+- [x] Tool stops on first failure (configurable)
 
 ### Must Have
 - Parse .hurl format (use hurlfmt or manual parsing)

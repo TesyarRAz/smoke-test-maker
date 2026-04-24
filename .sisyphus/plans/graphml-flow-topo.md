@@ -72,4 +72,4 @@ Current layout is linear (entries[i] at position i). User wants graph-based layo
 
 ## Commit Strategy
 
-- [ ] `feat(graphml): add topological layout for flow diagram`
+- [x] `feat(graphml): add topological layout for flow diagram`

@@ -1,6 +1,12 @@
 {
-  "active_plan": "/home/v00285/projects/smoke-test-maker/.sisyphus/plans/standalone-screenshot.md",
-  "started_at": "2026-04-24T06:31:26.052Z",
-  "session_ids": ["ses_242c75123ffehWhu0oCBIJT3el"],
-  "plan_name": "standalone-screenshot"
+  "active_plan": "/home/v00285/projects/smoke-test-maker/.sisyphus/plans/fix-query-pipe-error.md",
+  "started_at": "2026-04-24T07:08:33.466Z",
+  "session_ids": [
+    "ses_242c75123ffehWhu0oCBIJT3el"
+  ],
+  "session_origins": {
+    "ses_242c75123ffehWhu0oCBIJT3el": "direct"
+  },
+  "plan_name": "fix-query-pipe-error",
+  "agent": "atlas"
 }

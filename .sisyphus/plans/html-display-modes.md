@@ -47,11 +47,11 @@ Add CLI options to control HTML display and implement display mode logic in gene
   - Configurable container width
 
 ### Definition of Done
-- [ ] CLI accepts --display-mode and --display-width
-- [ ] Build passes
-- [ ] Single row shows as form (vertical layout)
-- [ ] Multi-row shows as scrollable table
-- [ ] Container width matches --display-width
+- [x] CLI accepts --display-mode and --display-width
+- [x] Build passes
+- [x] Single row shows as form (vertical layout)
+- [x] Multi-row shows as scrollable table
+- [x] Container width matches --display-width
 
 ### Must Have
 - Single row → form (vertical, label above value)
@@ -95,9 +95,9 @@ Task 1: Add CLI options (--display-mode, --display-width)
   - Pass these options to HTML generator
 
   **Acceptance Criteria**:
-  - [ ] CLI accepts --display-mode vertical
-  - [ ] CLI accepts --display-width 1200
-  - [ ] Options passed to generator
+  - [x] CLI accepts --display-mode vertical
+  - [x] CLI accepts --display-width 1200
+  - [x] Options passed to generator
 
 - [x] 2. Update HTML generator with display logic
 
@@ -107,21 +107,17 @@ Task 1: Add CLI options (--display-mode, --display-width)
   - Run build
   - Verify no TS errors
 
-  **Acceptance Criteria**:
-  - [ ] Build passes
+**Acceptance Criteria**:
+  - [x] Build passes
 
 ---
 
-## Success Criteria
-
-### Verification Commands
-```bash
-bun run build  # Should exit 0
-```
-
 ### Final Checklist
-- [ ] --display-mode CLI option works
-- [ ] --display-width CLI option works
-- [ ] Single row shows form layout
-- [ ] Multi-row shows scrollable table
-- [ ] Width matches CLI option
+- [x] --display-mode CLI option works
+- [x] --display-width CLI option works
+- [x] Single row shows form layout
+- [x] Multi-row shows scrollable table
+- [x] Width matches CLI option
+- [x] Single row shows form layout
+- [x] Multi-row shows scrollable table
+- [x] Width matches CLI option

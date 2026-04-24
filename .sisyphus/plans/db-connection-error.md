@@ -32,9 +32,9 @@ User: "nah ini ketika db nya ga konek itu harusnya muncul error dong"
 When DB connection fails, display the error to the user and stop execution immediately.
 
 ### Concrete Deliverables
-- [ ] Console shows DB connection error with clear message
-- [ ] Execution stops when DB can't connect
-- [ ] Error message includes which DB type failed
+- [x] Console shows DB connection error with clear message
+- [x] Execution stops when DB can't connect
+- [x] Error message includes which DB type failed
 
 ### Must Have
 - DB error displayed to console (not silently ignored)
@@ -147,6 +147,6 @@ Task 3: QA verification
 
 ## Done Criteria
 
-- [ ] DB connection error displayed to console
-- [ ] Process exits with error code
-- [ ] Build passes
+- [x] DB connection error displayed to console
+- [x] Process exits with error code
+- [x] Build passes

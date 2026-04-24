@@ -41,5 +41,5 @@ Seharusnya menggunakan DSN yang diberikan dari:
 
 ## Done Criteria
 
-- [ ] Connector menggunakan real DSN
-- [ ] Build passes
+- [x] Connector menggunakan real DSN
+- [x] Build passes

@@ -5,8 +5,8 @@
 > **Quick Summary**: Fix bug where captured variables from HTTP responses only available for current entry, not propagated to subsequent entries. Need global accumulator to persist captures across all entries.
 > 
 > **Deliverables**: Modified `src/index.ts` execution loop with accumulatedVariables, test verification script
-> - [ ] Updated index.ts with global accumulator for captured variables
-> - [ ] Test script verifying variable propagation works
+> - [x] Updated index.ts with global accumulator for captured variables
+> - [x] Test script verifying variable propagation works
 > 
 > **Estimated Effort**: Short (1-2 hours)
 > **Parallel Execution**: NO (sequential fix)
@@ -41,7 +41,7 @@ Create global accumulatedVariables that persists across ALL entries so pre-outpu
 - Test verification script
 
 ### Definition of Done
-- [ ] Entry #1 capture accessible in Entry #3's pre-output query
+- [x] Entry #1 capture accessible in Entry #3's pre-output query
 
 ### Must Have
 - Captured variables propagate forward to subsequent entries
@@ -117,9 +117,9 @@ Task 1: Modify index.ts execution loop to accumulate captures
   - `src/resolver/variable-resolver.ts` - variable resolution pattern
 
   **Acceptance Criteria**:
-  - [ ] Captured variables from Entry #1 available in Entry #2's URL
-  - [ ] Captured variables from Entry #1 and #2 available in Entry #3's pre-output query
-  - [ ] Initial CLI variables remain as base (not lost)
+  - [x] Captured variables from Entry #1 available in Entry #2's URL
+  - [x] Captured variables from Entry #1 and #2 available in Entry #3's pre-output query
+  - [x] Initial CLI variables remain as base (not lost)
 
   **QA Scenarios**:
 
@@ -142,8 +142,8 @@ Task 1: Modify index.ts execution loop to accumulate captures
   - Verify no placeholder {{variable}} remains in query
 
   **Acceptance Criteria**:
-  - [ ] No {{variable}} placeholders in executed pre-output queries
-  - [ ] DB query returns correct row based on captured ID
+  - [x] No {{variable}} placeholders in executed pre-output queries
+  - [x] DB query returns correct row based on captured ID
 
   **QA Scenarios**:
 

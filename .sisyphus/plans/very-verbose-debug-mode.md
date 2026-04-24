@@ -33,13 +33,13 @@ Conversations revealed user wants password FULL VISIBLE (not masked).
 Tambahkan `--very-verbose` flag yang print DB connection string saat connect.
 
 ### Must Have
-- [ ] CLI menerima `--very-verbose` flag tanpa error
-- [ ] Print: `[DB] Establishing connection to {full_dsn}...` sebelum connect()
-- [ ] Print: `[DB] Connected to {dbType}` setelah connect berhasil
+- [x] CLI menerima `--very-verbose` flag tanpa error
+- [x] Print: `[DB] Establishing connection to {full_dsn}...` sebelum connect()
+- [x] Print: `[DB] Connected to {dbType}` setelah connect berhasil
 
 ### Must NOT Have
-- [ ] Tidak print kalau flag TIDAK digunakan (backward compatible)
-- [ ] Tidak ubah output format lain
+- [x] Tidak print kalau flag TIDAK digunakan (backward compatible)
+- [x] Tidak ubah output format lain
 
 ---
 

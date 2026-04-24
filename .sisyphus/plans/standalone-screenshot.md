@@ -72,4 +72,4 @@ const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-outpu
 
 ## Commit Strategy
 
-- [ ] `feat(screenshot): allow standalone screenshot without query`
+- [x] `feat(screenshot): allow standalone screenshot without query`

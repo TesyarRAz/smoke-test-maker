@@ -1,4 +1,4 @@
-export type DatabaseType = 'postgresdb' | 'mysql' | 'mongodb' | 'testdb';
+export type DatabaseType = 'postgres' | 'postgresdb' | 'mysql' | 'mongodb' | 'testdb';
 
 export interface DatabaseConfig {
   type: DatabaseType;

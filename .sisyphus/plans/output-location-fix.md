@@ -32,8 +32,8 @@ User ingin output berada di lokasi yang sama dengan file hurl, bukan di root. Mi
 Default output location harus sama dengan folder file hurl, bukan root
 
 ### Definition of Done
-- [ ] Jalankan `smoke-test-maker test/scenario.hurl` → output ada di `test/output/`
-- [ ] Jalankan dengan `--output-dir custom/path` → tetap gunakan custom path (tidak overridden)
+- [x] Jalankan `smoke-test-maker test/scenario.hurl` → output ada di `test/output/`
+- [x] Jalankan dengan `--output-dir custom/path` → tetap gunakan custom path (tidak overridden)
 
 ---
 

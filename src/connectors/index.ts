@@ -6,6 +6,7 @@ import { TestDbConnector } from './testdb.js';
 
 export function createConnector(type: DatabaseType): DatabaseConnection {
   switch (type) {
+    case 'postgres':
     case 'postgresdb':
       return new PostgresConnector();
     case 'mysql':

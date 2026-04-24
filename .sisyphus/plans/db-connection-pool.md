@@ -35,5 +35,5 @@ Setiap case buat koneksi baru → inefficient
 
 ## Done Criteria
 
-- [ ] Unique DSN → single connection pool
-- [ ] Build passes
+- [x] Unique DSN → single connection pool
+- [x] Build passes
