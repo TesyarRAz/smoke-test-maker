@@ -1,6 +1,7 @@
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { HttpResponseData, DatabaseResult } from '../types/output.js';
+import { prettyPrintJson } from 'pretty-print-json';
 
 export interface ScreenshotData {
   httpResponse: HttpResponseData | null;
@@ -160,7 +161,7 @@ function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, c
   if (resp.body && typeof resp.body === 'object') {
     responseBody = `<div class="info-section">
       <div class="info-label">Response Body</div>
-      <div class="info-value"><pre class="json-response">${syntaxHighlightJson(JSON.stringify(resp.body, null, 2))}</pre></div>
+      <div class="info-value"><pre class="json-response">${prettyPrintJson.toHtml(resp.body)}</pre></div>
     </div>`;
   } else if (resp.body && typeof resp.body === 'string' && resp.body.trim()) {
     responseBody = `<div class="info-section">
@@ -185,7 +186,7 @@ function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, c
       const parsed = JSON.parse(reqBody);
       reqBodyHtml = `<div class="info-section">
         <div class="info-label">Request Body</div>
-        <div class="info-value"><pre class="json-response">${syntaxHighlightJson(JSON.stringify(parsed, null, 2))}</pre></div>
+        <div class="info-value"><pre class="json-response">${prettyPrintJson.toHtml(parsed)}</pre></div>
       </div>`;
     } catch {
       reqBodyHtml = `<div class="info-section">
@@ -307,25 +308,6 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
-}
-
-function syntaxHighlightJson(json: string): string {
-  return json
-    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
-      let cls = 'json-number';
-      if (/^"/.test(match)) {
-        if (/:$/.test(match)) {
-          cls = 'json-key';
-        } else {
-          cls = 'json-string';
-        }
-      } else if (/true|false/.test(match)) {
-        cls = 'json-boolean';
-      } else if (/null/.test(match)) {
-        cls = 'json-null';
-      }
-      return `<span class="${cls}">${match}</span>`;
-    });
 }
 
 export async function htmlToPng(html: string, options: HtmlGeneratorOptions): Promise<string> {
