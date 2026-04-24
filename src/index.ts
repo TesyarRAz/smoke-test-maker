@@ -6,7 +6,7 @@ import { existsSync } from 'fs';
 import { parseHurlFile } from './parser/hurl-parser.js';
 import { executeHurlFile, type ExecutionOptions, type EntryResult } from './executor/hurl-executor.js';
 import { generateOutput, writeOutputFile, filterHeaders } from './generator/output-generator.js';
-import { generateGraphml } from './generator/graphml-generator.js';
+import { generateGraphml, generateFlowHtml } from './generator/graphml-generator.js';
 import { processCustomComments, getScreenshotActions, disconnectAll } from './processor/comment-processor.js';
 import { shouldSkipOutput, getSkippedEntries } from './handler/skip-handler.js';
 import { generateHtml, htmlToPng, type ScreenshotData } from './generator/html-generator.js';
@@ -45,13 +45,13 @@ async function run() {
  .option('-d, --very-verbose', 'Print detailed debug information including DB connections', false)
  .option('--display-mode <mode>', 'Display mode: vertical, horizontal, or grid', 'vertical')
  .option('--display-width <width>', 'Display width in px', (val) => parseInt(val, 10), 1400)
-    .option('--graphml', 'Generate GraphML flow diagram', false)
+    .option('--graphml', 'Generate GraphML flow diagram and PNG image', false)
 
 program.parse(process.argv);
 
 const graphmlOpts = program.opts();
 
-// Handle --graphml flag early
+// Handle --graphml flag: Generate GraphML + HTML flow diagram + PNG screenshot
 if (graphmlOpts.graphml) {
   const inputFile = program.args[0];
   if (!inputFile) {
@@ -59,14 +59,29 @@ if (graphmlOpts.graphml) {
   }
   
   const hurlFile: HurlFile = parseHurlFile(inputFile);
-  const graphml = generateGraphml(hurlFile.entries);
   const defaultOutputDir = join(dirname(inputFile), 'output');
   const outputDir = graphmlOpts.outputDir ?? defaultOutputDir;
-  const graphmlName = basename(inputFile).replace(/\.hurl$/, '.graphml');
-  const outputPath = join(outputDir, graphmlName);
+  const caseName = basename(inputFile).replace(/\.hurl$/, '');
+  
   mkdirSync(outputDir, { recursive: true });
-  writeFileSync(outputPath, graphml);
-  console.log(`GraphML generated: ${outputPath}`);
+  
+  const graphml = generateGraphml(hurlFile.entries);
+  const graphmlName = caseName + '.graphml';
+  const graphmlPath = join(outputDir, graphmlName);
+  writeFileSync(graphmlPath, graphml);
+  console.log(`GraphML generated: ${graphmlPath}`);
+  
+  const flowHtml = generateFlowHtml(hurlFile.entries);
+  const pngPath = join(outputDir, caseName + '_flow.png');
+  
+  const puppeteer = await import('puppeteer');
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.setContent(flowHtml, { waitUntil: 'networkidle0' });
+  await page.screenshot({ path: pngPath, fullPage: true, type: 'png' });
+  await browser.close();
+  console.log(`Flow PNG generated: ${pngPath}`);
+  
   process.exit(0);
 }
 

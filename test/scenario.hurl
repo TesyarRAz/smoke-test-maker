@@ -5,6 +5,8 @@ GET https://httpbin.org/get
 HTTP 200
 [Asserts]
 status == 200
+[Captures]
+binUrl: "$.url"
 
 # Entry 2: GET request with # skip marker
 # skip
@@ -13,9 +15,8 @@ GET https://httpbin.org/status/204
 HTTP 204
 
 # Entry 3: GET with custom DB query comment (will try postgres if available)
-GET https://httpbin.org/uuid
+GET https://httpbin.org/uuid?q={{binUrl}}
 # show-header:*
-
 HTTP 200
 [Asserts]
 status == 200
