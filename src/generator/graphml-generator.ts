@@ -147,6 +147,7 @@ function escapeXml(text: string): string {
 
 export interface GraphNode {
   id: string;
+  index: number;
   method: string;
   url: string;
 }
@@ -164,6 +165,7 @@ export function generateFlowHtml(entries: HurlEntry[]): string {
   
   const nodes: GraphNode[] = entries.map(entry => ({
     id: `${entry.request.method} ${entry.request.url}`,
+    index: entry.index,
     method: entry.request.method,
     url: entry.request.url
   }));
@@ -179,7 +181,44 @@ export function generateFlowHtml(entries: HurlEntry[]): string {
     label: edge.label
   }));
   
-  return generateFlowDiagramHtml(nodes, links);
+  // Calculate topological layer
+  const nodeLayer = new Map<string, number>();
+  const inDegree = new Map<string, number>();
+
+  for (const node of nodes) {
+    nodeLayer.set(node.id, 0);
+    inDegree.set(node.id, 0);
+  }
+
+  for (const link of links) {
+    inDegree.set(link.target, (inDegree.get(link.target) || 0) + 1);
+  }
+
+  const queue: string[] = [];
+  for (const [nodeId, deg] of inDegree) {
+    if (deg === 0) queue.push(nodeId);
+  }
+
+  while (queue.length > 0) {
+    const nodeId = queue.shift()!;
+    const currentLayer = nodeLayer.get(nodeId)!;
+    for (const link of links) {
+      if (link.source === nodeId) {
+        const targetLayer = nodeLayer.get(link.target)!;
+        const newLayer = currentLayer + 1;
+        if (newLayer > targetLayer) {
+          nodeLayer.set(link.target, newLayer);
+          queue.push(link.target);
+        }
+      }
+    }
+  }
+
+  const sortedNodes = [...nodes].sort((a, b) => 
+    (nodeLayer.get(a.id) || 0) - (nodeLayer.get(b.id) || 0)
+  );
+
+  return generateFlowDiagramHtml(sortedNodes, links);
 }
 
 function generateFlowDiagramHtml(nodes: GraphNode[], links: GraphLink[]): string {
