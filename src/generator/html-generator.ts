@@ -52,7 +52,7 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
     .info-section { margin-bottom: 20px; }
     .info-section:last-child { margin-bottom: 0; }
     .info-label { font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .info-value { background: #f8f9fa; padding: 12px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; }
+    .info-value { background: #f8f9fa; padding: 12px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 600px; overflow-y: auto; }
     .cookies-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     .cookies-table th { background: #e9ecef; padding: 8px; text-align: left; font-weight: 600; }
     .cookies-table td { padding: 8px; border-bottom: 1px solid #dee2e6; font-family: monospace; word-break: break-word; }

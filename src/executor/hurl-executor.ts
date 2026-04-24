@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import type { HurlFile } from '../types/hurl.js';
 import type { HttpResponseData } from '../types/output.js';
+import { exit } from 'process';
 
 export interface ExecutionOptions {
   stopOnFailure: boolean;
@@ -70,22 +71,30 @@ export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOpti
           }
         }
         
-        const bodyMatch = stderr.match(/\* Response body:\r?\n([\s\S]*?)(?=\r?\n\* [A-Z])/);
+        // 1. Update regex agar berhenti jika bertemu baris yang diawali '*' baik diikuti huruf maupun tidak
+        const bodyMatch = stderr.match(/\* Response body:\r?\n([\s\S]*?)(?=\r?\n\* [A-Z]|\r?\n\*$|$)/);
+
         if (bodyMatch) {
-          body = bodyMatch[1].replace(/^\* /gm, '').trim();
+          // 2. Update replace agar menghapus '*' meskipun tidak ada spasi di belakangnya
+          // Kita gunakan /^\* ?/gm (artinya: hapus bintang dan spasi opsional di awal baris)
+          body = bodyMatch[1].replace(/^\* ?/gm, '').trim();
         }
-        
+
         for (const cap of entryData.captures || []) {
           if (cap.name && cap.value !== undefined) {
             capturedVars[cap.name] = String(cap.value);
           }
         }
-        
+
         try {
           const parsed = JSON.parse(body);
           body = JSON.stringify(parsed, null, 2);
-        } catch {
-          // Keep raw
+        } catch (ex) {
+          console.error("--- Parsing Error Body ---");
+          console.error(ex);
+          console.log("Original Body Content:");
+          console.log(body);
+          process.exit(1);
         }
       }
     } catch {
