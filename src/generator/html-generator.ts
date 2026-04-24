@@ -54,7 +54,9 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
     .info-value { background: #f8f9fa; padding: 12px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; }
     .cookies-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     .cookies-table th { background: #e9ecef; padding: 8px; text-align: left; font-weight: 600; }
-    .cookies-table td { padding: 8px; border-bottom: 1px solid #dee2e6; font-family: monospace; }
+    .cookies-table td { padding: 8px; border-bottom: 1px solid #dee2e6; font-family: monospace; word-break: break-word; }
+    .cookies-table th:first-child, .cookies-table td:first-child { min-width: 150px; max-width: 250px; }
+    .cookies-table td:last-child { max-width: 400px; }
     .db-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 16px; overflow: hidden; }
     .db-header { background: #e7f3ff; padding: 12px 20px; border-bottom: 1px solid #b8daff; display: flex; justify-content: space-between; align-items: center; }
     .db-type { font-weight: 600; color: #004085; }
