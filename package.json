@@ -25,8 +25,8 @@
     "build": "tsc",
     "start": "node dist/cli.js",
     "prepublishOnly": "tsc",
-    "release": "npm run build && npm publish",
-    "release:dry": "npm run build && npm publish --dry-run",
+    "release": "npm run bundle && npm publish",
+    "release:dry": "npm run bundle && npm publish --dry-run",
     "bundle": "node bundle.js"
   },
   "description": "CLI tool to generate smoke tests from .hurl files with DB query integration",

@@ -90,11 +90,6 @@ export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOpti
           const parsed = JSON.parse(body);
           body = JSON.stringify(parsed, null, 2);
         } catch (ex) {
-          console.error("--- Parsing Error Body ---");
-          console.error(ex);
-          console.log("Original Body Content:");
-          console.log(body);
-          process.exit(1);
         }
       }
     } catch {
