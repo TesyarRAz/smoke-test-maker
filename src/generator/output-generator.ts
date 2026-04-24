@@ -32,6 +32,7 @@ export interface OutputOptions {
   outputDir: string;
   caseName?: string;
   showHeaders?: string[];
+  requestHeaders?: { name: string; value: string }[];
 }
 
 export function generateOutput(
@@ -54,6 +55,7 @@ export function generateOutput(
       body: formattedBody,
       duration: response?.duration || 0
     },
+    requestHeaders: options.requestHeaders,
     duration: response?.duration || 0,
     databases
   };

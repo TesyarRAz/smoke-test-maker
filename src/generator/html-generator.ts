@@ -8,6 +8,7 @@ export interface ScreenshotData {
   requestBody?: string;
   requestUrl?: string;
   requestMethod?: string;
+  requestHeaders?: { name: string; value: string }[];
 }
 
 export interface HtmlGeneratorOptions {
@@ -28,7 +29,7 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
   <title>Smoke Test Results</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 24px; background: #ef2028; min-height: 100vh; }
     .container { max-width: ${displayWidth}; margin: 0 auto; }
     .header { background: white; padding: 24px; margin-bottom: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .header h1 { font-size: 28px; color: #333; margin-bottom: 8px; }
@@ -64,12 +65,12 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
     .db-results th { background: #f8f9fa; padding: 10px; text-align: left; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; }
     .db-results td { padding: 10px; border-bottom: 1px solid #dee2e6; }
     .db-results tr:hover { background: #f8f9fa; }
-    .card-number { display: inline-block; background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 12px; }
+    .card-number { display: inline-block; background: #ef2028; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 12px; }
     .tabs-container { border-top: 1px solid #e9ecef; }
     .tabs-nav { display: flex; background: #f8f9fa; border-bottom: 1px solid #e9ecef; }
     .tab-btn { padding: 12px 16px; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #666; border-bottom: 2px solid transparent; }
     .tab-btn:hover { color: #333; }
-    .tab-btn.active { color: #007bff; border-bottom-color: #007bff; }
+    .tab-btn.active { color: #ef2028; border-bottom-color: #ef2028; }
     .tab-content { display: none; padding: 16px 20px; }
     .tab-content.active { display: block; }
     /* Display Mode: vertical - label above value */
@@ -88,6 +89,13 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
     .display-grid .form-value { font-family: monospace; font-size: 12px; }
     /* Scrollable table */
     .scrollable-table { max-height: 300px; overflow-y: auto; }
+    /* JSON Syntax Highlighting */
+    .json-response { background: #f8f9fa; padding: 12px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12px; overflow-x: auto; white-space: pre; word-break: break-all; line-height: 1.6; }
+    .json-key { color: #0066cc; }
+    .json-string { color: #22863a; }
+    .json-number { color: #e36209; }
+    .json-boolean { color: #6f42c1; }
+    .json-null { color: #6a737d; }
   </style>
 </head>
 <body>
@@ -115,7 +123,8 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
         d.requestBody,
         cardNum++,
         d.requestUrl || '',
-        d.requestMethod || 'GET'
+        d.requestMethod || 'GET',
+        d.requestHeaders
       );
     }
   }
@@ -144,12 +153,12 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
   return html;
 }
 
-function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, cardNum: number, url: string, method: string): string {
+function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, cardNum: number, url: string, method: string, reqHeaders?: { name: string; value: string }[]): string {
   let responseBody = '';
   if (resp.body && typeof resp.body === 'object') {
     responseBody = `<div class="info-section">
       <div class="info-label">Response Body</div>
-      <div class="info-value">${escapeHtml(JSON.stringify(resp.body, null, 2))}</div>
+      <div class="info-value"><pre class="json-response">${syntaxHighlightJson(JSON.stringify(resp.body, null, 2))}</pre></div>
     </div>`;
   } else if (resp.body && typeof resp.body === 'string' && resp.body.trim()) {
     responseBody = `<div class="info-section">
@@ -160,13 +169,21 @@ function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, c
     responseBody = `<p style="color:#666;font-size:12px;">No response body</p>`;
   }
 
+  let reqHeadersHtml = '';
+  if (reqHeaders && reqHeaders.length > 0) {
+    reqHeadersHtml = `<table class="cookies-table">
+      <thead><tr><th>Name</th><th>Value</th></tr></thead>
+      <tbody>${reqHeaders.map(h => `<tr><td>${escapeHtml(h.name)}</td><td>${escapeHtml(h.value)}</td></tr>`).join('')}</tbody>
+    </table>`;
+  }
+
   let reqBodyHtml = '';
   if (reqBody) {
     try {
       const parsed = JSON.parse(reqBody);
       reqBodyHtml = `<div class="info-section">
         <div class="info-label">Request Body</div>
-        <div class="info-value">${escapeHtml(JSON.stringify(parsed, null, 2))}</div>
+        <div class="info-value"><pre class="json-response">${syntaxHighlightJson(JSON.stringify(parsed, null, 2))}</pre></div>
       </div>`;
     } catch {
       reqBodyHtml = `<div class="info-section">
@@ -202,6 +219,16 @@ function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, c
         <span class="http-status ${statusClass}">${resp.status}</span>
       </div>
       <div class="http-body">
+        ${reqHeaders && reqHeaders.length > 0 ? `<div class="info-section">
+          <div class="info-label">Request Headers</div>
+          <div class="info-value"><table class="cookies-table">
+            <thead><tr><th>Name</th><th>Value</th></tr></thead>
+            <tbody>${reqHeaders.map(h => `<tr><td>${escapeHtml(h.name)}</td><td>${escapeHtml(h.value)}</td></tr>`).join('')}</tbody>
+          </table></div>
+        </div>` : `<div class="info-section">
+          <div class="info-label">Request Headers</div>
+          <div class="info-value"><p style="color:#666;font-size:12px;">No request headers</p></div>
+        </div>`}
         ${reqBodyHtml}
         ${responseBody}
       </div>
@@ -231,9 +258,9 @@ function generateDbCard(db: DatabaseResult, cardNum: number, displayMode: 'verti
     const rowCount = db.result.rows.length;
     
     if (rowCount === 1) {
-      // Render as FORM (vertical layout - label above value)
+      // Render as FORM (horizontal layout - label | value in one row)
       const row = db.result.rows[0];
-      resultsHtml = `<div class="db-results display-vertical">
+      resultsHtml = `<div class="db-results display-horizontal">
         ${fieldNames.map(f => `
           <div class="form-row">
             <div class="form-label">${escapeHtml(f)}</div>
@@ -278,6 +305,25 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function syntaxHighlightJson(json: string): string {
+  return json
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+      let cls = 'json-number';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'json-key';
+        } else {
+          cls = 'json-string';
+        }
+      } else if (/true|false/.test(match)) {
+        cls = 'json-boolean';
+      } else if (/null/.test(match)) {
+        cls = 'json-null';
+      }
+      return `<span class="${cls}">${match}</span>`;
+    });
 }
 
 export async function htmlToPng(html: string, options: HtmlGeneratorOptions): Promise<string> {

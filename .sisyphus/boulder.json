@@ -1,12 +1,12 @@
 {
-  "active_plan": "/home/v00285/projects/smoke-test-maker/.sisyphus/plans/fix-missing-http-cards.md",
-  "started_at": "2026-04-23T09:51:13.388Z",
+  "active_plan": "/home/v00285/projects/smoke-test-maker/.sisyphus/plans/graphml-node-id.md",
+  "started_at": "2026-04-24T03:38:48.685Z",
   "session_ids": [
     "ses_2468f38f9ffeRZnXfiajEL6iLo"
   ],
   "session_origins": {
     "ses_2468f38f9ffeRZnXfiajEL6iLo": "direct"
   },
-  "plan_name": "fix-missing-http-cards",
+  "plan_name": "graphml-node-id",
   "agent": "atlas"
 }

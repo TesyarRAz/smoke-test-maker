@@ -14,6 +14,7 @@ export interface EntryResult {
   index: number;
   success: boolean;
   response: HttpResponseData | null;
+  requestHeaders?: { name: string; value: string }[];
   error?: string;
   duration: number;
   capturedVars: Record<string, string>;
@@ -44,6 +45,7 @@ export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOpti
     let body = '';
     let capturedVars: Record<string, string> = {};
     let entryDuration = execDuration;
+    let requestHeaders: { name: string; value: string }[] = [];
     
     try {
       const hurlOutput = JSON.parse(stdout);
@@ -53,9 +55,14 @@ export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOpti
         
         const call = entryData.calls?.[0];
         const resp = call?.response;
+        const req = call?.request;
         
         status = resp?.status || 200;
         entryDuration = entryData.time || execDuration;
+        
+        if (req?.headers && Array.isArray(req.headers)) {
+          requestHeaders = req.headers;
+        }
         
         if (resp?.headers && Array.isArray(resp.headers)) {
           for (const h of resp.headers) {
@@ -95,6 +102,7 @@ export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOpti
       index: entryNum,
       success,
       response: { status, headers, body, duration: entryDuration },
+      requestHeaders,
       error: success ? undefined : stderr,
       duration: entryDuration,
       capturedVars

@@ -20,6 +20,7 @@ export interface CaseOutput {
   entryIndex: number;
   status: 'pass' | 'fail';
   response: HttpResponseData;
+  requestHeaders?: { name: string; value: string }[];
   duration: number;
   databases: DatabaseResult[];
 }

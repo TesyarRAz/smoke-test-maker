@@ -1,11 +1,12 @@
 import { Command } from 'commander';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { parse } from 'dotenv';
-import { resolve, dirname, join } from 'path';
+import { resolve, dirname, join, basename } from 'path';
 import { existsSync } from 'fs';
 import { parseHurlFile } from './parser/hurl-parser.js';
 import { executeHurlFile, type ExecutionOptions, type EntryResult } from './executor/hurl-executor.js';
 import { generateOutput, writeOutputFile, filterHeaders } from './generator/output-generator.js';
+import { generateGraphml } from './generator/graphml-generator.js';
 import { processCustomComments, getScreenshotActions, disconnectAll } from './processor/comment-processor.js';
 import { shouldSkipOutput, getSkippedEntries } from './handler/skip-handler.js';
 import { generateHtml, htmlToPng, type ScreenshotData } from './generator/html-generator.js';
@@ -44,8 +45,30 @@ async function run() {
  .option('-d, --very-verbose', 'Print detailed debug information including DB connections', false)
  .option('--display-mode <mode>', 'Display mode: vertical, horizontal, or grid', 'vertical')
  .option('--display-width <width>', 'Display width in px', (val) => parseInt(val, 10), 1400)
+    .option('--graphml', 'Generate GraphML flow diagram', false)
 
 program.parse(process.argv);
+
+const graphmlOpts = program.opts();
+
+// Handle --graphml flag early
+if (graphmlOpts.graphml) {
+  const inputFile = program.args[0];
+  if (!inputFile) {
+    program.error('Input file is required');
+  }
+  
+  const hurlFile: HurlFile = parseHurlFile(inputFile);
+  const graphml = generateGraphml(hurlFile.entries);
+  const defaultOutputDir = join(dirname(inputFile), 'output');
+  const outputDir = graphmlOpts.outputDir ?? defaultOutputDir;
+  const graphmlName = basename(inputFile).replace(/\.hurl$/, '.graphml');
+  const outputPath = join(outputDir, graphmlName);
+  mkdirSync(outputDir, { recursive: true });
+  writeFileSync(outputPath, graphml);
+  console.log(`GraphML generated: ${outputPath}`);
+  process.exit(0);
+}
 
 // Forward CLI options to HTML generator if available
 const cliOptions: any = {
@@ -173,7 +196,8 @@ if (typeof htmlGen === 'function') {
         databases,
         requestBody: entry.request?.body,
         requestUrl: entry.request?.url,
-        requestMethod: entry.request?.method
+        requestMethod: entry.request?.method,
+        requestHeaders: result.requestHeaders
       };
       accumulatedData.push(entryData);
 
@@ -197,7 +221,7 @@ if (typeof htmlGen === 'function') {
           result.success,
           result.response,
           databases,
-          { outputDir: options.outputDir, caseName, showHeaders: entry.showHeaders }
+          { outputDir: options.outputDir, caseName, showHeaders: entry.showHeaders, requestHeaders: result.requestHeaders }
         );
         
         const filepath = await writeOutputFile(output, { outputDir: options.outputDir });
