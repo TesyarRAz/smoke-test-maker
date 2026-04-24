@@ -28,7 +28,20 @@ export async function processCustomComments(
   for (const comment of entry.customComments) {
     try {
       const dsn = resolveDsn(comment.dsnVariable, variables);
-      const query = resolveQuery(comment.query, variables);
+      
+      // Handle screenshot without query - just capture, skip DB execution
+      if (comment.action === 'screenshot' && !comment.query) {
+        results.push({
+          order: order++,
+          type: comment.dbType,
+          action: 'screenshot',
+          query: '',
+          result: { rows: [], fields: [] }
+        });
+        continue;
+      }
+      
+      const query = resolveQuery(comment.query!, variables);
       
       let connector = connectorCache.get(dsn);
       if (!connector) {

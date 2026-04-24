@@ -6,7 +6,7 @@ HTTP 200
 [Asserts]
 status == 200
 [Captures]
-binUrl: "$.url"
+binUrl: jsonpath "$.url"
 
 # Entry 2: GET request with # skip marker
 # skip
@@ -17,8 +17,7 @@ HTTP 204
 # Entry 3: GET with custom DB query comment (will try postgres if available)
 GET https://httpbin.org/uuid?q={{binUrl}}
 # show-header:*
+# screenshot
 HTTP 200
 [Asserts]
 status == 200
-
-# output:postgresdb:{db_dsn}|SELECT 1 as test

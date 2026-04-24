@@ -4,7 +4,8 @@ import type { HurlFile, HurlEntry, CustomComment, HttpMethod, HurlHeader, HurlCa
 const METHOD_REGEX = /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s+(.+)$/i;
 const SECTION_REGEX = /^\[(Captures|Asserts|Options)\]$/i;
 const HTTP_STATUS_REGEX = /^HTTP\s+\d+$/i;
-const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)\|(.+)$/;
+const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)(\|(.+))?$/;
+const SCREENSHOT_ONLY_REGEX = /^#\s*screenshot$/i;
 const SKIP_REGEX = /^#\s*skip$/i;
 const HEADER_REGEX = /^([^:]+):\s*(.+)$/;
 const SHOW_HEADER_REGEX = /^#\s*show-header:\s*(.+)$/i;
@@ -22,6 +23,7 @@ export function parseHurlFile(filepath: string): HurlFile {
   let lineNum = 0;
   let inBody = false;
   let bodyLines: string[] = [];
+  let pendingScreenshot = false;
 
   for (const line of lines) {
     lineNum++;
@@ -48,6 +50,18 @@ export function parseHurlFile(filepath: string): HurlFile {
         } else {
           commentLines.push(trimmed);
         }
+      } else if (SCREENSHOT_ONLY_REGEX.test(trimmed)) {
+        if (currentEntry) {
+          (currentEntry as any).showScreenshot = true;
+        } else {
+          pendingScreenshot = true;
+        }
+      } else if (trimmed.startsWith('#') || trimmed.startsWith('>')) {
+        if (inResponse) {
+          postCommentLines.push(trimmed);
+        } else {
+          commentLines.push(trimmed);
+        }
       }
       continue;
     }
@@ -71,6 +85,10 @@ export function parseHurlFile(filepath: string): HurlFile {
         request: { method, url },
         rawContent: commentLines.join('\n') + (postCommentLines.length > 0 ? '\n' + postCommentLines.join('\n') : '')
       };
+      if (pendingScreenshot) {
+        (currentEntry as any).showScreenshot = true;
+        pendingScreenshot = false;
+      }
       commentLines = [];
       postCommentLines = [];
       inResponse = false;
@@ -166,6 +184,11 @@ function processCustomComments(entries: HurlEntry[]): void {
           dsnVariable: match[3],
           query: match[4]
         });
+      }
+
+      const screenshotMatch = line.match(SCREENSHOT_ONLY_REGEX);
+      if (screenshotMatch) {
+        entry.showScreenshot = true;
       }
 
       // Handle show-header directives

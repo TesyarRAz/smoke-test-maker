@@ -40,7 +40,7 @@ export interface CustomComment {
   action: 'output' | 'screenshot' | 'pre-output' | 'post-output';
   dbType: 'postgresdb' | 'mysql' | 'mongodb' | 'testdb';
   dsnVariable: string;
-  query: string;
+  query?: string;
 }
 
 export interface HurlEntry {
@@ -54,6 +54,7 @@ export interface HurlEntry {
   skip?: boolean;
   rawContent: string;
   showHeaders?: string[];
+  showScreenshot?: boolean;
 }
 
 export interface HurlFile {

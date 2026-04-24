@@ -35,7 +35,9 @@ export function extractVariableUsage(entries: HurlEntry[]): Map<number, string[]
     
     if (entry.customComments) {
       for (const comment of entry.customComments) {
-        extractVariables(comment.query).forEach(v => variables.add(v));
+        if (comment.query) {
+          extractVariables(comment.query).forEach(v => variables.add(v));
+        }
       }
     }
     
