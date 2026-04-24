@@ -32,41 +32,41 @@ const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-outpu
 
 ## Task
 
-- [ ] 1. **Update CUSTOM_COMMENT_REGEX to make query optional for screenshot**
+- [x] 1. **Update CUSTOM_COMMENT_REGEX to make query optional for screenshot**
 
-  **What to do**:
-  - Change regex to make query optional when action is `screenshot`
-  - New regex pattern:
-  ```typescript
-  const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)(\|(.+))?$/;
-  ```
-  - The `(\|(.+))?` makes the query optional
+   **What to do**:
+   - Change regex to make query optional when action is `screenshot`
+   - New regex pattern:
+   ```typescript
+   const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)(\|(.+))?$/;
+   ```
+   - The `(\|(.+))?` makes the query optional
 
-- [ ] 2. **Update type to allow undefined query**
+- [x] 2. **Update type to allow undefined query**
 
-  **What to do** (src/types/hurl.ts:43):
-  ```typescript
-  export interface CustomComment {
-    action: 'output' | 'screenshot' | 'pre-output' | 'post-output';
-    dbType: 'postgresdb' | 'mysql' | 'mongodb' | 'testdb';
-    dsnVariable: string;
-    query?: string;  // Optional for screenshot
-  }
-  ```
+   **What to do** (src/types/hurl.ts:43):
+   ```typescript
+   export interface CustomComment {
+     action: 'output' | 'screenshot' | 'pre-output' | 'post-output';
+     dbType: 'postgresdb' | 'mysql' | 'mongodb' | 'testdb';
+     dsnVariable: string;
+     query?: string;  // Optional for screenshot
+   }
+   ```
 
-- [ ] 3. **Update processor to handle screenshot without query**
+- [x] 3. **Update processor to handle screenshot without query**
 
-  **What to do** (src/processor/comment-processor.ts):
-  - When action is `screenshot` and query is empty/undefined, still process the screenshot
-  - Skip database execution, just capture screenshot
+   **What to do** (src/processor/comment-processor.ts):
+   - When action is `screenshot` and query is empty/undefined, still process the screenshot
+   - Skip database execution, just capture screenshot
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] `> screenshot:postgresdb:{{DB_URL}}` works (no query needed)
-- [ ] `> screenshot:mysql:{{DB_URL}}|SELECT 1` still works (with query)
-- [ ] Build passes
+- [x] `> screenshot:postgresdb:{{DB_URL}}` works (no query needed)
+- [x] `> screenshot:mysql:{{DB_URL}}|SELECT 1` still works (with query)
+- [x] Build passes
 
 ---
 

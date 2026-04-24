@@ -182,7 +182,7 @@ function processCustomComments(entries: HurlEntry[]): void {
           action: match[1] as 'output' | 'screenshot',
           dbType: match[2] as 'postgresdb' | 'mysql' | 'mongodb',
           dsnVariable: match[3],
-          query: match[4]
+          query: match[5]
         });
       }
 
