@@ -1,22 +1,9 @@
 {
-  "active_plan": "/home/v00285/projects/smoke-test-maker/.sisyphus/plans/html-pretty-print-fix.md",
-  "started_at": "2026-04-24T08:26:40.581Z",
-  "session_ids": [
-    "ses_242c75123ffehWhu0oCBIJT3el"
-  ],
-  "plan_name": "html-pretty-print-fix",
+  "active_plan": "/home/raz/Programming/riset/smoke-test-maker/.sisyphus/plans/cytoscape-flow.md",
+  "started_at": "2026-04-26T00:53:00.000Z",
+  "session_ids": ["ses_23a3b8f65ffeVX7pr0VQ1ta9bO"],
+  "plan_name": "cytoscape-flow",
   "session_origins": {
-    "ses_242c75123ffehWhu0oCBIJT3el": "direct"
-  },
-  "task_sessions": {
-    "todo:2": {
-      "task_key": "todo:2",
-      "task_label": "2",
-      "task_title": "**Update HTML generator to use pretty-print-json**",
-      "session_id": "ses_241645cc0ffewUXxQ8uLeMyDiS",
-      "agent": "Sisyphus-Junior",
-      "category": "quick",
-      "updated_at": "2026-04-24T08:29:46.524Z"
-    }
+    "ses_23a3b8f65ffeVX7pr0VQ1ta9bO": "direct"
   }
 }

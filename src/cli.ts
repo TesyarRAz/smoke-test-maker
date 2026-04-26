@@ -11,6 +11,7 @@ export interface CliOptions {
   stopOnFailure: boolean;
   strict: boolean;
   variables: Record<string, string>;
+  graphml?: boolean;
 }
 
 let cliOptions: CliOptions;
@@ -31,7 +32,8 @@ export function parseCliArgs(args: string[]): CliOptions {
       if (!prev) prev = [];
       prev.push(val);
       return prev;
-    }, [] as string[]);
+    }, [] as string[])
+    .option('--graphml', 'Generate GraphML flow diagram and PNG image', false);
 
   program.parse(args);
 
@@ -83,11 +85,11 @@ export function parseCliArgs(args: string[]): CliOptions {
   cliOptions = {
     inputFile,
     envFile: opts.env,
-    // Use user-provided outputDir when supplied, otherwise derive from input file
     outputDir: (opts.outputDir ?? defaultOutputDir),
     stopOnFailure: opts.stopOnFailure || false,
     strict: opts.strict || false,
-    variables
+    variables,
+    graphml: opts.graphml || false
   };
 
   return cliOptions;

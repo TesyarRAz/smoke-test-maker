@@ -23,7 +23,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/cli.js",
+    "start": "node dist/index.js",
     "prepublishOnly": "tsc",
     "release": "npm run bundle && npm publish",
     "release:dry": "npm run bundle && npm publish --dry-run",
