@@ -72,11 +72,16 @@ if (graphmlOpts.graphml) {
   console.log(`GraphML generated: ${graphmlPath}`);
   
   const flowHtml = generateFlowHtml(hurlFile.entries);
+  const flowHtmlPath = join(outputDir, caseName + '_flow.html');
+  writeFileSync(flowHtmlPath, flowHtml);
+  console.log(`Flow HTML generated: ${flowHtmlPath}`);
+
   const pngPath = join(outputDir, caseName + '_flow.png');
   
   const puppeteer = await import('puppeteer');
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
+  await page.setViewport({ width: 4096, height: 2048 });
   await page.setContent(flowHtml, { waitUntil: 'networkidle0' });
   await page.screenshot({ path: pngPath, fullPage: true, type: 'png' });
   await browser.close();

@@ -260,7 +260,7 @@ function generateFlowDiagramHtml(nodes: GraphNode[], links: GraphLink[]): string
     
     <style>
         body { font-family: sans-serif; margin: 0; background: #f9fafe; }
-        #cy { width: 100vw; height: 100vh; display: block; }
+        #cy { width: 100%; height: 100vh; display: block; position: absolute; top: 0; left: 0; }
         .header {
             position: absolute; top: 20px; left: 20px; z-index: 10;
             background: white; padding: 15px; border-radius: 8px;
@@ -293,16 +293,16 @@ function generateFlowDiagramHtml(nodes: GraphNode[], links: GraphLink[]): string
                             'text-valign': 'center',
                             'text-halign': 'center',
                             'shape': 'round-rectangle',
-                            'width': '250px',
-                            'height': '50px',
+                            'width': 'label',
+                            'height': '60px',
+                            'padding': '12px',
                             'background-color': '#ffffff',
                             'border-width': 2,
                             'border-color': '#0074D9',
                             'color': '#333',
                             'font-size': '10px',
                             'font-weight': 'bold',
-                            'text-wrap': 'wrap',
-                            'text-max-width': '230px'
+                            'text-wrap': 'wrap'
                         }
                     },
                     {
