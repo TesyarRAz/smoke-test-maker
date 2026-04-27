@@ -28,6 +28,7 @@ export async function executeHurlFile(hurlFile: HurlFile, options: ExecutionOpti
   let accumulatedVariables: Record<string, string> = { ...options.variables };
   
   for (let i = 0; i < hurlFile.entries.length; i++) {
+    const entry = hurlFile.entries[i];
     const entryNum = i + 1;
     const args = ['--json', '--very-verbose', '--from-entry', String(entryNum), '--to-entry', String(entryNum)];
 

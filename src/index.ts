@@ -226,7 +226,7 @@ if (typeof htmlGen === 'function') {
       }
 
       const screenshotActions = getScreenshotActions(databases);
-      if (screenshotActions.length > 0 || entry.showScreenshot) {
+      if ((screenshotActions.length > 0 || entry.showScreenshot) && !entry.skip) {
         const caseName = entry.showScreenshot 
           ? `case${entry.index}_screenshot`
           : `case${entry.index}_screenshot_${screenshotActions.filter(a => a.action === 'screenshot' || a.action === 'pre-output' || a.action === 'post-output').length}`;

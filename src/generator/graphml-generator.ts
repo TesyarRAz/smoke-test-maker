@@ -101,7 +101,7 @@ export function generateGraphml(entries: HurlEntry[]): string {
   const usage = extractVariableUsage(entries);
   const edges = buildEdges(captures, usage);
   
-// Build node ID map: index -> "METHOD URL (index)"
+  // Build node ID map: index -> "METHOD URL (index)"
   const nodeIdMap = new Map<number, string>();
   for (const entry of entries) {
     nodeIdMap.set(entry.index, `${entry.request.method} ${entry.request.url} (${entry.index})`);
