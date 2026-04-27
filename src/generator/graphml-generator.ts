@@ -101,14 +101,14 @@ export function generateGraphml(entries: HurlEntry[]): string {
   const usage = extractVariableUsage(entries);
   const edges = buildEdges(captures, usage);
   
-  // Build node ID map: index -> "METHOD URL"
+// Build node ID map: index -> "METHOD URL (index)"
   const nodeIdMap = new Map<number, string>();
   for (const entry of entries) {
-    nodeIdMap.set(entry.index, `${entry.request.method} ${entry.request.url}`);
+    nodeIdMap.set(entry.index, `${entry.request.method} ${entry.request.url} (${entry.index})`);
   }
-  
+
   const nodes = entries.map(entry => {
-    const id = `${entry.request.method} ${entry.request.url}`;
+    const id = `${entry.request.method} ${entry.request.url} (${entry.index})`;
     const method = entry.request.method;
     const url = escapeXml(entry.request.url);
     
@@ -165,16 +165,16 @@ export function generateFlowHtml(entries: HurlEntry[]): string {
   const usage = extractVariableUsage(entries);
   const edges = buildEdges(captures, usage);
   
-  const nodes: GraphNode[] = entries.map(entry => ({
-    id: `${entry.request.method} ${entry.request.url}`,
+const nodes: GraphNode[] = entries.map(entry => ({
+    id: `${entry.request.method} ${entry.request.url} (${entry.index})`,
     index: entry.index,
     method: entry.request.method,
     url: entry.request.url
   }));
-  
+
   const nodeIdMap = new Map<number, string>();
   for (const entry of entries) {
-    nodeIdMap.set(entry.index, `${entry.request.method} ${entry.request.url}`);
+    nodeIdMap.set(entry.index, `${entry.request.method} ${entry.request.url} (${entry.index})`);
   }
   
   const links: GraphLink[] = edges.map(edge => ({
@@ -226,13 +226,13 @@ export function generateFlowHtml(entries: HurlEntry[]): string {
 function generateFlowDiagramHtml(nodes: GraphNode[], links: GraphLink[]): string {
   const nodeIdMap = new Map<string, string>();
   nodes.forEach((node, i) => {
-    nodeIdMap.set(node.id, `n${i}`);
+    nodeIdMap.set(node.id, `n${node.index}`);
   });
 
-  const cyNodes = nodes.map((node, i) => ({
+  const cyNodes = nodes.map(node => ({
     data: {
-      id: `n${i}`,
-      label: `${node.method} ${node.url}`,
+      id: `n${node.index}`,
+      label: `${node.method} ${node.url} (${node.index})`,
       method: node.method
     }
   }));
