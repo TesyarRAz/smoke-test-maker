@@ -31,6 +31,7 @@ function formatBody(body: string): string | Record<string, unknown> {
 export interface OutputOptions {
   outputDir: string;
   caseName?: string;
+  title?: string;
   showHeaders?: string[];
   requestHeaders?: { name: string; value: string }[];
 }
@@ -48,6 +49,7 @@ export function generateOutput(
   return {
     name: options.caseName || `case${entryIndex}`,
     entryIndex,
+    title: options.title,
     status: success ? 'pass' : 'fail',
     response: {
       status: response?.status || 0,

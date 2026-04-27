@@ -10,6 +10,7 @@ export interface ScreenshotData {
   requestUrl?: string;
   requestMethod?: string;
   requestHeaders?: { name: string; value: string }[];
+  title?: string;
 }
 
 export interface HtmlGeneratorOptions {
@@ -69,6 +70,7 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
     .db-results td { padding: 10px; border-bottom: 1px solid #dee2e6; }
     .db-results tr:hover { background: #f8f9fa; }
     .card-number { display: inline-block; background: #ef2028; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 12px; }
+    .card-title { display: inline-block; background: #6f42c1; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-right: 8px; }
     .tabs-container { border-top: 1px solid #e9ecef; }
     .tabs-nav { display: flex; background: #f8f9fa; border-bottom: 1px solid #e9ecef; }
     .tab-btn { padding: 12px 16px; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #666; border-bottom: 2px solid transparent; }
@@ -127,7 +129,8 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
         cardNum++,
         d.requestUrl || '',
         d.requestMethod || 'GET',
-        d.requestHeaders
+        d.requestHeaders,
+        d.title
       );
     }
   }
@@ -156,7 +159,7 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
   return html;
 }
 
-function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, cardNum: number, url: string, method: string, reqHeaders?: { name: string; value: string }[]): string {
+function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, cardNum: number, url: string, method: string, reqHeaders?: { name: string; value: string }[], title?: string): string {
   let responseBody = '';
   if (resp.body && typeof resp.body === 'object') {
     responseBody = `<div class="info-section">
@@ -210,9 +213,10 @@ function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, c
 
   const statusClass = resp.status < 300 ? 'status-2xx' : resp.status < 400 ? 'status-4xx' : 'status-5xx';
   const uniqueId = 'card-' + cardNum;
+  const titleDisplay = title ? `<span class="card-title">${escapeHtml(title)}</span>` : 'HTTP Request & Response';
 
   return `
-    <div class="section-title"><span class="card-number">${cardNum}</span>HTTP Request & Response</div>
+    <div class="section-title"><span class="card-number">${cardNum}</span>${titleDisplay}</div>
     <div class="http-card">
       <div class="http-header">
         <div>

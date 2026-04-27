@@ -217,7 +217,8 @@ if (typeof htmlGen === 'function') {
         requestBody: entry.request?.body,
         requestUrl: entry.request?.url,
         requestMethod: entry.request?.method,
-        requestHeaders: result.requestHeaders
+        requestHeaders: result.requestHeaders,
+        title: entry.title
       };
       accumulatedData.push(entryData);
 
@@ -243,7 +244,7 @@ if (typeof htmlGen === 'function') {
           result.success,
           result.response,
           databases,
-          { outputDir: options.outputDir, caseName, showHeaders: entry.showHeaders, requestHeaders: result.requestHeaders }
+          { outputDir: options.outputDir, caseName, title: entry.title, showHeaders: entry.showHeaders, requestHeaders: result.requestHeaders }
         );
         
         const filepath = await writeOutputFile(output, { outputDir: options.outputDir });

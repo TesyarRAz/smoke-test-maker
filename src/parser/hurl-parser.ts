@@ -7,6 +7,7 @@ const HTTP_STATUS_REGEX = /^HTTP\s+\d+$/i;
 const CUSTOM_COMMENT_REGEX = /(?:#|>)\s*(output|screenshot|pre-output|post-output):(postgres|postgresdb|mysql|mongodb|testdb):(\{[^}]+\}|[^|]+)(\|(.+))?$/;
 const SCREENSHOT_ONLY_REGEX = /^#\s*screenshot$/i;
 const SKIP_REGEX = /^#\s*skip$/i;
+const TITLE_REGEX = /^#\s*title:(.+)$/i;
 const HEADER_REGEX = /^([^:]+):\s*(.+)$/;
 const SHOW_HEADER_REGEX = /^#\s*show-header:\s*(.+)$/i;
 
@@ -24,6 +25,7 @@ export function parseHurlFile(filepath: string): HurlFile {
   let inBody = false;
   let bodyLines: string[] = [];
   let pendingScreenshot = false;
+  let pendingTitle = '';
 
   for (const line of lines) {
     lineNum++;
@@ -35,6 +37,11 @@ export function parseHurlFile(filepath: string): HurlFile {
           postCommentLines.push(trimmed);
         } else {
           commentLines.push(trimmed);
+        }
+      } else if (TITLE_REGEX.test(trimmed)) {
+        const match = trimmed.match(TITLE_REGEX);
+        if (match) {
+          pendingTitle = match[1].trim();
         }
       } else if (CUSTOM_COMMENT_REGEX.test(line)) {
         if (inResponse) {
@@ -75,6 +82,7 @@ export function parseHurlFile(filepath: string): HurlFile {
     if (methodMatch) {
       if (currentEntry) {
         entries.push(currentEntry);
+        currentEntry = null;
       }
 
       const method = methodMatch[1].toUpperCase() as HttpMethod;
@@ -88,6 +96,10 @@ export function parseHurlFile(filepath: string): HurlFile {
       if (pendingScreenshot) {
         (currentEntry as any).showScreenshot = true;
         pendingScreenshot = false;
+      }
+      if (pendingTitle) {
+        (currentEntry as any).title = pendingTitle;
+        pendingTitle = '';
       }
       commentLines = [];
       postCommentLines = [];
@@ -213,6 +225,13 @@ function processSkipMarkers(entries: HurlEntry[]): void {
   for (const entry of entries) {
     const lines = entry.rawContent.split('\n');
     entry.skip = lines.some(line => SKIP_REGEX.test(line.trim()));
+    const titleLine = lines.find(line => TITLE_REGEX.test(line.trim()));
+    if (titleLine && !entry.title) {
+      const match = titleLine.match(TITLE_REGEX);
+      if (match) {
+        entry.title = match[1].trim();
+      }
+    }
   }
 }
 

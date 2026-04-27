@@ -55,6 +55,7 @@ export interface HurlEntry {
   rawContent: string;
   showHeaders?: string[];
   showScreenshot?: boolean;
+  title?: string;
 }
 
 export interface HurlFile {

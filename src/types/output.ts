@@ -18,6 +18,7 @@ export interface DatabaseResult {
 export interface CaseOutput {
   name: string;
   entryIndex: number;
+  title?: string;
   status: 'pass' | 'fail';
   response: HttpResponseData;
   requestHeaders?: { name: string; value: string }[];
