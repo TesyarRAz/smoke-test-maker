@@ -34,6 +34,7 @@ export async function processCustomComments(
         results.push({
           order: order++,
           type: comment.dbType,
+          name: comment.dsnVariable.replace(/[{{}}]/g, ''),
           action: 'screenshot',
           query: '',
           result: { rows: [], fields: [] }
@@ -69,6 +70,7 @@ export async function processCustomComments(
       results.push({
         order: order++,
         type: comment.dbType,
+        name: comment.dsnVariable.replace(/[{{}}]/g, ''),
         action: comment.action as 'output' | 'screenshot' | 'pre-output' | 'post-output',
         query,
         result: queryResult

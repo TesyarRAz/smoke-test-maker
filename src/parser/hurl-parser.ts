@@ -172,7 +172,7 @@ export function parseHurlFile(filepath: string): HurlFile {
   }
 
   processCustomComments(entries);
-  processSkipMarkers(entries);
+  processSkipMarkers(entries, content);
 
   return {
     filename: filepath,
@@ -221,16 +221,21 @@ function processCustomComments(entries: HurlEntry[]): void {
   }
 }
 
-function processSkipMarkers(entries: HurlEntry[]): void {
-  for (const entry of entries) {
-    const lines = entry.rawContent.split('\n');
-    entry.skip = lines.some(line => SKIP_REGEX.test(line.trim()));
-    const titleLine = lines.find(line => TITLE_REGEX.test(line.trim()));
-    if (titleLine && !entry.title) {
-      const match = titleLine.match(TITLE_REGEX);
-      if (match) {
-        entry.title = match[1].trim();
-      }
+function processSkipMarkers(entries: HurlEntry[], fileContent: string): void {
+  let entryIdx = 0;
+  for (const line of fileContent.split('\n')) {
+    if (SKIP_REGEX.test(line.trim())) {
+      if (entryIdx < entries.length) entries[entryIdx].skip = true;
+    }
+    if (SCREENSHOT_ONLY_REGEX.test(line.trim())) {
+      if (entryIdx < entries.length) entries[entryIdx].showScreenshot = true;
+    }
+    const titleMatch = line.match(TITLE_REGEX);
+    if (titleMatch) {
+      if (entryIdx < entries.length) entries[entryIdx].title = titleMatch[1].trim();
+    }
+    if (line.match(METHOD_REGEX)) {
+      entryIdx++;
     }
   }
 }

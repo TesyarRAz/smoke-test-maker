@@ -10,6 +10,7 @@ export interface HttpResponseData {
 export interface DatabaseResult {
   order: number;
   type: DatabaseType;
+  name?: string;
   action: 'output' | 'screenshot' | 'pre-output' | 'post-output';
   query: string;
   result: QueryResult;

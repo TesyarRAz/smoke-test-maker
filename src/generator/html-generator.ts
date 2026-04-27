@@ -70,7 +70,6 @@ export function generateHtml(data: ScreenshotData[], options: { displayMode?: 'v
     .db-results td { padding: 10px; border-bottom: 1px solid #dee2e6; }
     .db-results tr:hover { background: #f8f9fa; }
     .card-number { display: inline-block; background: #ef2028; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 12px; }
-    .card-title { display: inline-block; background: #6f42c1; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-right: 8px; }
     .tabs-container { border-top: 1px solid #e9ecef; }
     .tabs-nav { display: flex; background: #f8f9fa; border-bottom: 1px solid #e9ecef; }
     .tab-btn { padding: 12px 16px; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #666; border-bottom: 2px solid transparent; }
@@ -213,7 +212,7 @@ function generateHttpCard(resp: HttpResponseData, reqBody: string | undefined, c
 
   const statusClass = resp.status < 300 ? 'status-2xx' : resp.status < 400 ? 'status-4xx' : 'status-5xx';
   const uniqueId = 'card-' + cardNum;
-  const titleDisplay = title ? `<span class="card-title">${escapeHtml(title)}</span>` : 'HTTP Request & Response';
+  const titleDisplay = title ? `${escapeHtml(title)}` : 'HTTP Request & Response';
 
   return `
     <div class="section-title"><span class="card-number">${cardNum}</span>${titleDisplay}</div>
@@ -290,11 +289,12 @@ function generateDbCard(db: DatabaseResult, cardNum: number, displayMode: 'verti
     resultsHtml = '<p style="color:#666;font-size:12px;">No results</p>';
   }
 
+  const dbName = db.name || db.type;
   return `
-    <div class="section-title"><span class="card-number">${cardNum}</span>Database - ${db.type}</div>
+    <div class="section-title"><span class="card-number">${cardNum}</span>Database - ${escapeHtml(dbName)}</div>
     <div class="db-card ${actionClass}">
       <div class="db-header">
-        <span class="db-type">${db.type}</span>
+        <span class="db-type">${escapeHtml(db.type)}</span>
         <span class="db-action">${db.action}</span>
       </div>
       <div class="db-body">
