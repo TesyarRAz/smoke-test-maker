@@ -99,6 +99,12 @@ export function getScreenshotActions(results: DatabaseResult[]): DatabaseResult[
   );
 }
 
+// Filters an array of CustomComment by the given action value.
+// This helper is used to pre-filter comments before execution.
+export function filterCommentsByAction(comments: CustomComment[], action: string): CustomComment[] {
+  return comments.filter(c => c.action === action);
+}
+
 export async function disconnectAll(): Promise<void> {
   for (const [, connector] of connectorCache) {
     await connector.disconnect();
