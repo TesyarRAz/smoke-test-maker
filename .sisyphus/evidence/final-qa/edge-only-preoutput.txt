@@ -1,0 +1,20 @@
+Parsing hurl file: /tmp/qa-only-preoutput.hurl
+Found 1 entries
+Processing entries...
+[Entry 1] Executing PRE-OUTPUT queries BEFORE HTTP request...
+[DB] Establishing connection to dsn...
+[DB] Connected to testdb
+[Entry 1] PRE-OUTPUT completed (before HTTP)
+[Entry 1] Executing HTTP request...
+[Entry 1] HTTP request completed (status: 200)
+Generated HTML: /tmp/output/case1_screenshot_1_screenshot.html
+Generated PNG: /tmp/output/case1_screenshot_1_screenshot.png
+Generated screenshot: /tmp/output/case1_screenshot_1_screenshot.png
+Wrote output: /tmp/output/case1.json
+
+--- Summary ---
+Total entries: 1
+Successful: 1
+Failed: 0
+Skipped: 0
+Duration: 3826ms

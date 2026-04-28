@@ -1,0 +1,14 @@
+bun test v1.3.10 (30e609e0)
+
+test/pre-output-order.test.ts:
+Processing entries...
+Wrote output: undefined
+Processing entries...
+Wrote output: undefined
+Processing entries...
+Wrote output: undefined
+
+ 3 pass
+ 0 fail
+ 4 expect() calls
+Ran 3 tests across 1 file. [274.00ms]

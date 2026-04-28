@@ -1,0 +1,45 @@
+Parsing hurl file: /tmp/qa-var-timing.hurl
+Found 2 entries
+Processing entries...
+[Entry 1] Executing HTTP request...
+[Entry 1] HTTP request completed (status: 200)
+Wrote output: /tmp/output/case1.json
+[Entry 2] Executing PRE-OUTPUT queries BEFORE HTTP request...
+[DB] Establishing connection to dsn...
+[DB] Connected to testdb
+[Entry 2] PRE-OUTPUT completed (before HTTP)
+[Entry 2] Executing HTTP request...
+[Entry 2] HTTP request completed (status: 200)
+Generated HTML: /tmp/output/case2_screenshot_1_screenshot.html
+Generated PNG: /tmp/output/case2_screenshot_1_screenshot.png
+Generated screenshot: /tmp/output/case2_screenshot_1_screenshot.png
+Wrote output: /tmp/output/case2.json
+
+--- Summary ---
+Total entries: 2
+Successful: 0
+Failed: 2
+Skipped: 0
+Duration: 2618ms
+
+=== Failed Entries ===
+
+Entry 1 FAILED:
+  error: Parsing literal
+    --> /tmp/qa-var-timing.hurl:5:32
+     |
+   5 | token: jsonpath "$.json.token" any
+     |                                ^ expecting 'line_terminator'
+     |
+  
+  
+
+Entry 1 FAILED:
+  error: Parsing literal
+    --> /tmp/qa-var-timing.hurl:5:32
+     |
+   5 | token: jsonpath "$.json.token" any
+     |                                ^ expecting 'line_terminator'
+     |
+  
+  

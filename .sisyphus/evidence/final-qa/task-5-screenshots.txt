@@ -1,0 +1,4 @@
+test/output/case1_screenshot_1_screenshot.png
+test/output/case1_screenshot_screenshot.png
+test/output/case2_screenshot_screenshot.png
+test/output/case3_screenshot_screenshot.png

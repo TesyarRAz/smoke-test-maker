@@ -1,0 +1,18 @@
+total 516
+drwxr-xr-x 2 v00285 v00285   4096 Apr 28 17:21 .
+drwxr-xr-x 3 v00285 v00285   4096 Apr 28 17:20 ..
+-rw-r--r-- 1 v00285 v00285    781 Apr 28 17:33 case1.json
+-rw-r--r-- 1 v00285 v00285   9452 Apr 28 17:21 case1_screenshot_1_screenshot.html
+-rw-r--r-- 1 v00285 v00285  65504 Apr 28 17:21 case1_screenshot_1_screenshot.png
+-rw-r--r-- 1 v00285 v00285  43546 Apr 27 15:04 case1_screenshot_screenshot.html
+-rw-r--r-- 1 v00285 v00285 145447 Apr 27 15:04 case1_screenshot_screenshot.png
+-rw-r--r-- 1 v00285 v00285   2147 Apr 27 15:05 case2.json
+-rw-r--r-- 1 v00285 v00285  10355 Apr 27 15:04 case2_screenshot_screenshot.html
+-rw-r--r-- 1 v00285 v00285  85431 Apr 27 15:05 case2_screenshot_screenshot.png
+-rw-r--r-- 1 v00285 v00285   2205 Apr 28 17:33 case3.json
+-rw-r--r-- 1 v00285 v00285  10647 Apr 28 17:33 case3_screenshot_screenshot.html
+-rw-r--r-- 1 v00285 v00285  95507 Apr 28 17:33 case3_screenshot_screenshot.png
+-rw-r--r-- 1 v00285 v00285   2081 Apr 27 15:05 case4.json
+-rw-r--r-- 1 v00285 v00285   1022 Apr 27 15:05 case5.json
+-rw-r--r-- 1 v00285 v00285   3397 Apr 27 15:05 case6.json
+-rw-r--r-- 1 v00285 v00285  12990 Apr 27 15:05 jsonplaceholder_get-spec.md

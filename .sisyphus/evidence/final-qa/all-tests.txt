@@ -1,0 +1,33 @@
+bun test v1.3.10 (30e609e0)
+
+test/screenshot-output-generation.test.ts:
+Processing entries...
+Generated screenshot: undefined
+Wrote output: undefined
+Processing entries...
+Generated screenshot: undefined
+Wrote output: undefined
+Processing entries...
+Generated screenshot: undefined
+Wrote output: undefined
+
+test/pre-output-order.test.ts:
+Processing entries...
+Wrote output: undefined
+Processing entries...
+Wrote output: undefined
+Processing entries...
+Wrote output: undefined
+
+test/pre-output-order.test.js:
+Processing entries...
+Wrote output: undefined
+Processing entries...
+Wrote output: undefined
+Processing entries...
+Wrote output: undefined
+
+ 13 pass
+ 0 fail
+ 33 expect() calls
+Ran 13 tests across 5 files. [303.00ms]

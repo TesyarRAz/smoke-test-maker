@@ -1,0 +1,21 @@
+Loaded .env from: test/.env
+Parsing hurl file: test/edge-pre-only.hurl
+Found 1 entries
+Processing entries...
+[Entry 1] Executing PRE-OUTPUT queries BEFORE HTTP request...
+[DB] Establishing connection to sdad...
+[DB] Connected to testdb
+[Entry 1] PRE-OUTPUT completed (before HTTP)
+[Entry 1] Executing HTTP request...
+[Entry 1] HTTP request completed (status: 200)
+Generated HTML: test/output/case1_screenshot_1_screenshot.html
+Generated PNG: test/output/case1_screenshot_1_screenshot.png
+Generated screenshot: test/output/case1_screenshot_1_screenshot.png
+Wrote output: test/output/case1.json
+
+--- Summary ---
+Total entries: 1
+Successful: 1
+Failed: 0
+Skipped: 0
+Duration: 4074ms

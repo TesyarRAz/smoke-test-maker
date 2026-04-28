@@ -1,0 +1,51 @@
+  "databases": [
+    {
+      "order": 1,
+      "type": "testdb",
+      "name": "sdad",
+      "action": "pre-output",
+      "query": "select * from asdsadsad",
+      "result": {
+        "rows": [
+          {
+            "id": 1,
+            "name": "Sample",
+            "value": "test"
+          },
+          {
+            "id": 1,
+            "name": "Sample",
+            "value": "test"
+          }
+        ],
+        "fields": [
+          {
+            "name": "id",
+            "type": "integer"
+          },
+          {
+            "name": "name",
+            "type": "varchar"
+          }
+        ]
+      }
+    },
+    {
+      "order": 1,
+      "type": "testdb",
+      "name": "sdad",
+      "action": "post-output",
+      "query": "select * from asdsadsad",
+      "result": {
+        "rows": [
+          {
+            "id": 1,
+            "name": "Sample",
+            "value": "test"
+          },
+          {
+            "id": 1,
+            "name": "Sample",
+            "value": "test"
+          }
+        ],

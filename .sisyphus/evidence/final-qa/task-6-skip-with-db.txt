@@ -1,0 +1,12 @@
+Parsing hurl file: /tmp/qa-skip-with-db.hurl
+Found 1 entries
+Processing entries...
+[Entry 1] Executing HTTP request...
+[Entry 1] HTTP request completed (status: 200)
+
+--- Summary ---
+Total entries: 1
+Successful: 1
+Failed: 0
+Skipped: 1
+Duration: 1101ms

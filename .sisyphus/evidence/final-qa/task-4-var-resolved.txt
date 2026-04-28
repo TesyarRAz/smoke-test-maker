@@ -1,0 +1,78 @@
+{
+  "name": "case2",
+  "entryIndex": 2,
+  "status": "pass",
+  "response": {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "args": {},
+      "data": "",
+      "files": {},
+      "form": {},
+      "headers": {
+        "Accept": "*/*",
+        "Host": "httpbin.org",
+        "User-Agent": "hurl/7.1.0",
+        "X-Amzn-Trace-Id": "Root=1-69f08dd4-049fdf1e5884cba24ff97edf"
+      },
+      "json": null,
+      "method": "GET",
+      "origin": "158.140.180.65, 167.103.63.18",
+      "url": "https://httpbin.org/anything/entry1"
+    },
+    "duration": 2168
+  },
+  "requestHeaders": [
+    {
+      "name": "Host",
+      "value": "httpbin.org"
+    },
+    {
+      "name": "Accept",
+      "value": "*/*"
+    },
+    {
+      "name": "User-Agent",
+      "value": "hurl/7.1.0"
+    }
+  ],
+  "duration": 2168,
+  "databases": [
+    {
+      "order": 1,
+      "type": "testdb",
+      "name": "dsn",
+      "action": "pre-output",
+      "query": "SELECT * FROM users WHERE id = '{{token}}'",
+      "result": {
+        "rows": [
+          {
+            "id": 1,
+            "name": "Alice",
+            "email": "alice@example.com"
+          },
+          {
+            "id": 1,
+            "name": "Alice",
+            "email": "alice@example.com"
+          }
+        ],
+        "fields": [
+          {
+            "name": "id",
+            "type": "integer"
+          },
+          {
+            "name": "name",
+            "type": "varchar"
+          },
+          {
+            "name": "email",
+            "type": "varchar"
+          }
+        ]
+      }
+    }
+  ]
+}

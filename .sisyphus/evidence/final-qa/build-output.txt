@@ -1,0 +1,4 @@
+
+> smoke-test-maker@1.9.1 build
+> tsc
+

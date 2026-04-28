@@ -1,0 +1,28 @@
+Loaded .env from: test/.env
+Parsing hurl file: test/scenario.hurl
+Found 3 entries
+Processing entries...
+[Entry 1] Executing HTTP request...
+[Entry 1] HTTP request completed (status: 200)
+Wrote output: test/output/case1.json
+[Entry 2] Executing HTTP request...
+[Entry 2] HTTP request completed (status: 200)
+[Entry 3] Executing PRE-OUTPUT queries BEFORE HTTP request...
+[DB] Establishing connection to sdad...
+[DB] Connected to testdb
+[Entry 3] PRE-OUTPUT completed (before HTTP)
+[Entry 3] Executing HTTP request...
+[Entry 3] HTTP request completed (status: 200)
+[Entry 3] Executing POST-OUTPUT queries AFTER HTTP request...
+[Entry 3] POST-OUTPUT completed (after HTTP)
+Generated HTML: test/output/case3_screenshot_screenshot.html
+Generated PNG: test/output/case3_screenshot_screenshot.png
+Generated screenshot: test/output/case3_screenshot_screenshot.png
+Wrote output: test/output/case3.json
+
+--- Summary ---
+Total entries: 3
+Successful: 3
+Failed: 0
+Skipped: 1
+Duration: 7540ms

@@ -1,0 +1,10 @@
+Parsing hurl file: /tmp/qa-empty.hurl
+Found 0 entries
+Processing entries...
+
+--- Summary ---
+Total entries: 0
+Successful: 0
+Failed: 0
+Skipped: 0
+Duration: 3ms

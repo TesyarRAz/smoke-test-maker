@@ -1,0 +1,18 @@
+Parsing hurl file: /tmp/qa-skip-with-db3.hurl
+Found 1 entries
+Processing entries...
+[Entry 1] Executing PRE-OUTPUT queries BEFORE HTTP request...
+[DB] Establishing connection to dsn...
+[DB] Connected to testdb
+[Entry 1] PRE-OUTPUT completed (before HTTP)
+[Entry 1] Executing HTTP request...
+[Entry 1] HTTP request completed (status: 200)
+[Entry 1] Executing POST-OUTPUT queries AFTER HTTP request...
+[Entry 1] POST-OUTPUT completed (after HTTP)
+
+--- Summary ---
+Total entries: 1
+Successful: 1
+Failed: 0
+Skipped: 1
+Duration: 1154ms

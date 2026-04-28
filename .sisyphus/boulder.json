@@ -1,9 +1,67 @@
 {
-  "active_plan": "/home/raz/Programming/riset/smoke-test-maker/.sisyphus/plans/cytoscape-flow.md",
-  "started_at": "2026-04-26T00:53:00.000Z",
-  "session_ids": ["ses_23a3b8f65ffeVX7pr0VQ1ta9bO"],
-  "plan_name": "cytoscape-flow",
+  "active_plan": "/home/v00285/projects/smoke-test-maker/.sisyphus/plans/pre-output-fix.md",
+  "started_at": "2026-04-28T08:46:04.906Z",
+  "session_ids": [
+    "ses_233261091ffe3DaPq0W67sRfb7"
+  ],
   "session_origins": {
-    "ses_23a3b8f65ffeVX7pr0VQ1ta9bO": "direct"
+    "ses_233261091ffe3DaPq0W67sRfb7": "direct"
+  },
+  "plan_name": "pre-output-fix",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Add `filterCommentsByAction()` helper to comment-processor.ts",
+      "session_id": "ses_22cb86cd9ffeH9cFNHvFe9Jhi2",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-28T08:55:19.506Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Write TDD tests for pre-output execution order",
+      "session_id": "ses_22cb0108effegNbnAFzKunMFd8",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-low",
+      "updated_at": "2026-04-28T09:27:18.706Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Restructure main loop in index.ts for entry-by-entry processing",
+      "session_id": "ses_22c920abcffeFpjTvUFrQ6X10k",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-04-28T09:54:34.288Z"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "Update screenshot and output generation for new flow",
+      "session_id": "ses_22c77e272ffe0GBMyxacFrJE1L",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-04-28T10:11:39.145Z"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "Run full test suite and verify execution order",
+      "session_id": "ses_22c6960fbffegphcQ7j3r80zqc",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-04-28T10:25:26.165Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_22c5ab4edffeOp90HGsGyywR9T",
+      "agent": "oracle",
+      "updated_at": "2026-04-28T10:36:40.476Z"
+    }
   }
 }
