@@ -7,25 +7,128 @@ import { parseHurlFile } from './parser/hurl-parser.js';
 import { executeHurlFile, type ExecutionOptions, type EntryResult } from './executor/hurl-executor.js';
 import { generateOutput, writeOutputFile, filterHeaders } from './generator/output-generator.js';
 import { generateGraphml, generateFlowHtml } from './generator/graphml-generator.js';
-import { processCustomComments, getScreenshotActions, disconnectAll } from './processor/comment-processor.js';
+import { processCustomComments, getScreenshotActions, disconnectAll, filterCommentsByAction } from './processor/comment-processor.js';
 import { shouldSkipOutput, getSkippedEntries } from './handler/skip-handler.js';
 import { generateHtml, htmlToPng, type ScreenshotData } from './generator/html-generator.js';
 import type { CaseOutput, HttpResponseData, DatabaseResult, ExecutionResult } from './types/output.js';
 import type { HurlFile } from './types/hurl.js';
+import type { CliOptions } from './cli.js';
 
-interface CliOptions {
-  inputFile: string;
-  envFile?: string;
-  outputDir: string;
-  stopOnFailure: boolean;
-  strict: boolean;
-  variables: Record<string, string>;
-  veryVerbose?: boolean;
-  displayMode?: string;
-  displayWidth?: number;
+export async function processResults(hurlFile: HurlFile, options: CliOptions): Promise<EntryResult[]> {
+  const outputs: CaseOutput[] = [];
+  const skippedEntries: number[] = getSkippedEntries(hurlFile.entries);
+  const accumulatedData: ScreenshotData[] = [];
+  let entryData: ScreenshotData | null = null;
+  const allResults: EntryResult[] = [];
+
+  console.log('Processing entries...');
+  let accumulatedVars = { ...options.variables };
+
+  for (const entry of hurlFile.entries) {
+    const databases: DatabaseResult[] = [];
+
+    const preOutputComments = filterCommentsByAction(entry.customComments || [], 'pre-output');
+
+    if (preOutputComments.length > 0) {
+      if (options.veryVerbose) console.log(`[Entry ${entry.index}] Executing PRE-OUTPUT queries BEFORE HTTP request...`);
+      const preOutputEntry = { ...entry, customComments: preOutputComments };
+      try {
+        const dbResult = await processCustomComments(preOutputEntry, accumulatedVars, options.veryVerbose);
+        if (!dbResult.success) {
+          throw new Error(dbResult.error);
+        }
+        databases.push(...dbResult.results);
+        if (options.veryVerbose) console.log(`[Entry ${entry.index}] PRE-OUTPUT completed (before HTTP)`);
+      } catch (error) {
+        console.error(`Error: ${error instanceof Error ? error.message : error}`);
+        process.exit(1);
+      }
+    }
+
+    if (options.veryVerbose) console.log(`[Entry ${entry.index}] Executing HTTP request...`);
+    const singleEntryHurlFile: HurlFile = { ...hurlFile, entries: [entry] };
+    const execOptions: ExecutionOptions = {
+      stopOnFailure: options.stopOnFailure,
+      outputDir: options.outputDir,
+      variables: { ...accumulatedVars },
+      inputFile: options.inputFile,
+      strict: options.strict
+    };
+
+    const results: EntryResult[] = await executeHurlFile(singleEntryHurlFile, execOptions);
+    const result = results[0];
+    allResults.push(result);
+    if (options.veryVerbose) console.log(`[Entry ${entry.index}] HTTP request completed (status: ${result.response?.status})`);
+
+    const postOutputComments = (entry.customComments || []).filter(c =>
+      c.action === 'post-output' || c.action === 'output' || c.action === 'screenshot'
+    );
+
+    if (postOutputComments.length > 0) {
+      if (options.veryVerbose) console.log(`[Entry ${entry.index}] Executing POST-OUTPUT queries AFTER HTTP request...`);
+      const postOutputEntry = { ...entry, customComments: postOutputComments };
+      const mergedVariables = { ...accumulatedVars, ...result.capturedVars };
+      try {
+        const dbResult = await processCustomComments(postOutputEntry, mergedVariables, options.veryVerbose);
+        if (!dbResult.success) {
+          throw new Error(dbResult.error);
+        }
+        databases.push(...dbResult.results);
+        if (options.veryVerbose) console.log(`[Entry ${entry.index}] POST-OUTPUT completed (after HTTP)`);
+      } catch (error) {
+        console.error(`Error: ${error instanceof Error ? error.message : error}`);
+        process.exit(1);
+      }
+    }
+
+    entryData = {
+      httpResponse: result.response ? {
+        ...result.response,
+        headers: filterHeaders(result.response.headers || {}, entry.showHeaders)
+      } : null,
+      databases,
+      requestBody: entry.request?.body,
+      requestUrl: entry.request?.url,
+      requestMethod: entry.request?.method,
+      requestHeaders: result.requestHeaders,
+      title: entry.title
+    };
+    accumulatedData.push(entryData);
+
+    if (result.capturedVars && Object.keys(result.capturedVars).length > 0) {
+      accumulatedVars = { ...accumulatedVars, ...result.capturedVars };
+    }
+
+    const screenshotActions = getScreenshotActions(databases);
+    if ((screenshotActions.length > 0 || entry.showScreenshot) && !entry.skip) {
+      const caseName = entry.showScreenshot
+        ? `case${entry.index}_screenshot`
+        : `case${entry.index}_screenshot_${screenshotActions.filter(a => a.action === 'screenshot' || a.action === 'pre-output' || a.action === 'post-output').length}`;
+      const html = generateHtml([entryData]);
+      const pngPath = await htmlToPng(html, { outputDir: options.outputDir, caseName });
+      console.log(`Generated screenshot: ${pngPath}`);
+    }
+
+    if (!shouldSkipOutput(entry)) {
+      const caseName = `case${entry.index}`;
+      const output = generateOutput(
+        entry.index,
+        result.success,
+        result.response,
+        databases,
+        { outputDir: options.outputDir, caseName, title: entry.title, showHeaders: entry.showHeaders, requestHeaders: result.requestHeaders }
+      );
+
+      const filepath = await writeOutputFile(output, { outputDir: options.outputDir });
+      console.log(`Wrote output: ${filepath}`);
+      outputs.push(output);
+    }
+  }
+
+  return allResults;
 }
 
-async function run() {
+export async function run() {
   const program = new Command();
 
   program
@@ -162,96 +265,12 @@ if (typeof htmlGen === 'function') {
   let error: string | undefined;
 
   try {
-    // Step 1: Parse hurl file
     console.log('Parsing hurl file:', options.inputFile);
     const hurlFile: HurlFile = parseHurlFile(options.inputFile);
     console.log(`Found ${hurlFile.entries.length} entries`);
 
-    // Step 2: Execute entries
-    console.log('Executing entries...');
-    const execOptions: ExecutionOptions = {
-      stopOnFailure: options.stopOnFailure,
-      outputDir: options.outputDir,
-      variables: options.variables,
-      inputFile: inputFile,
-      strict: options.strict
-    };
-    
-    const results: EntryResult[] = await executeHurlFile(hurlFile, execOptions);
-    console.log(`Executed ${results.length} entries`);
-
-    // Step 3: Process results and write output files
-    const outputs: CaseOutput[] = [];
     const skippedEntries: number[] = getSkippedEntries(hurlFile.entries);
-    const accumulatedData: ScreenshotData[] = [];
-    let entryData: ScreenshotData | null = null;
-
-    console.log('Processing outputs...');
-    let accumulatedVars = { ...options.variables };
-    
-    for (const result of results) {
-      const entry = hurlFile.entries.find(e => e.index === result.index);
-      if (!entry) continue;
-
-      const databases: DatabaseResult[] = [];
-      const mergedVariables = { ...accumulatedVars, ...result.capturedVars };
-      if (entry.customComments && entry.customComments.length > 0) {
-        try {
-          const dbResult = await processCustomComments(entry, mergedVariables, options.veryVerbose);
-          if (!dbResult.success) {
-            throw new Error(dbResult.error);
-          }
-          databases.push(...dbResult.results);
-        } catch (error) {
-          console.error(`Error: ${error instanceof Error ? error.message : error}`);
-          process.exit(1);
-        }
-      }
-
-      entryData = {
-        httpResponse: result.response ? {
-          ...result.response,
-          headers: filterHeaders(result.response.headers || {}, entry.showHeaders)
-        } : null,
-        databases,
-        requestBody: entry.request?.body,
-        requestUrl: entry.request?.url,
-        requestMethod: entry.request?.method,
-        requestHeaders: result.requestHeaders,
-        title: entry.title
-      };
-      accumulatedData.push(entryData);
-
-      if (result.capturedVars && Object.keys(result.capturedVars).length > 0) {
-        accumulatedVars = { ...accumulatedVars, ...result.capturedVars };
-      }
-
-      const screenshotActions = getScreenshotActions(databases);
-      if ((screenshotActions.length > 0 || entry.showScreenshot) && !entry.skip) {
-        const caseName = entry.showScreenshot 
-          ? `case${entry.index}_screenshot`
-          : `case${entry.index}_screenshot_${screenshotActions.filter(a => a.action === 'screenshot' || a.action === 'pre-output' || a.action === 'post-output').length}`;
-        // Only include current entry data, not all accumulated
-        const html = generateHtml([entryData]);
-        const pngPath = await htmlToPng(html, { outputDir: options.outputDir, caseName });
-        console.log(`Generated screenshot: ${pngPath}`);
-      }
-
-      if (!shouldSkipOutput(entry)) {
-        const caseName = `case${entry.index}`;
-        const output = generateOutput(
-          entry.index,
-          result.success,
-          result.response,
-          databases,
-          { outputDir: options.outputDir, caseName, title: entry.title, showHeaders: entry.showHeaders, requestHeaders: result.requestHeaders }
-        );
-        
-        const filepath = await writeOutputFile(output, { outputDir: options.outputDir });
-        console.log(`Wrote output: ${filepath}`);
-        outputs.push(output);
-      }
-    }
+    const results = await processResults(hurlFile, options);
 
     const totalDuration = Date.now() - startTime;
 
@@ -261,7 +280,6 @@ if (typeof htmlGen === 'function') {
     console.log(`Successful: ${results.filter(r => r.success).length}`);
     console.log(`Failed: ${results.filter(r => !r.success).length}`);
     console.log(`Skipped: ${skippedEntries.length}`);
-    console.log(`Output files: ${outputs.length}`);
     console.log(`Duration: ${totalDuration}ms`);
 
     // Set exit code based on results
@@ -285,7 +303,6 @@ if (typeof htmlGen === 'function') {
         if (!r.success) {
           console.error(`\nEntry ${r.index} FAILED:`);
           if (r.error) {
-            // Print last 10 lines of error
             const errLines = r.error.split('\n').slice(-10);
             for (const line of errLines) {
               console.error('  ' + line);
@@ -307,4 +324,6 @@ if (typeof htmlGen === 'function') {
   process.exit(exitCode);
 }
 
-run();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  run();
+}

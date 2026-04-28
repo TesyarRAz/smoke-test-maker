@@ -12,6 +12,7 @@ export interface CliOptions {
   strict: boolean;
   variables: Record<string, string>;
   graphml?: boolean;
+  veryVerbose?: boolean;
 }
 
 let cliOptions: CliOptions;
@@ -33,6 +34,7 @@ export function parseCliArgs(args: string[]): CliOptions {
       prev.push(val);
       return prev;
     }, [] as string[])
+    .option('-d, --very-verbose', 'Print detailed debug information including DB connections', false)
     .option('--graphml', 'Generate GraphML flow diagram and PNG image', false);
 
   program.parse(args);
@@ -89,7 +91,8 @@ export function parseCliArgs(args: string[]): CliOptions {
     stopOnFailure: opts.stopOnFailure || false,
     strict: opts.strict || false,
     variables,
-    graphml: opts.graphml || false
+    graphml: opts.graphml || false,
+    veryVerbose: opts.veryVerbose || false
   };
 
   return cliOptions;
