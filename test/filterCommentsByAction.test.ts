@@ -1,5 +1,5 @@
-import type { CustomComment } from '../src/types/hurl.js';
-import { filterCommentsByAction } from '../src/processor/comment-processor.js';
+import type { CustomComment } from '../src/types/hurl';
+import { filterCommentsByAction } from '../src/processor/comment-processor';
 
 describe('filterCommentsByAction', () => {
   test('filters by action', () => {

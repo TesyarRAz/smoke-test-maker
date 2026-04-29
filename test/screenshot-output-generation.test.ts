@@ -1,8 +1,8 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { HurlEntry, CustomComment, HurlFile } from '../src/types/hurl.js';
-import type { EntryResult } from '../src/executor/hurl-executor.js';
-import type { ProcessResult, DatabaseResult } from '../src/processor/comment-processor.js';
-import type { CliOptions } from '../src/index.js';
+import type { HurlEntry, CustomComment, HurlFile } from '../src/types/hurl';
+import type { EntryResult } from '../src/executor/hurl-executor';
+import type { ProcessResult, DatabaseResult } from '../src/processor/comment-processor';
+import type { CliOptions } from '../src/index';
 
 vi.mock('../src/executor/hurl-executor.js', () => ({
   executeHurlFile: vi.fn(),
